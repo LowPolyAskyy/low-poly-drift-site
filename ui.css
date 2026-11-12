@@ -1,0 +1,30 @@
+:root{--panel:rgba(34,26,30,.78);--ink:#fbeed8;--accent:#ff8a4c;--muted:#d9c3a5;--gold:#ffd84a;color-scheme:light dark}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:"Century Gothic",Futura,"Trebuchet MS",sans-serif;color:var(--ink)}
+body{background:linear-gradient(#f2c29b 0%,#d9825f 55%,#6b3a4a 100%) fixed;display:flex;flex-direction:column;align-items:center;gap:16px;padding:18px 12px calc(24px + env(safe-area-inset-bottom,0px))}
+h1{margin:0;font-size:44px;color:var(--accent);text-shadow:0 3px 10px rgba(0,0,0,.35);text-align:center}
+h2{margin:0;font-size:22px}
+p{margin:0;color:var(--muted)}
+button{font:inherit;cursor:pointer;border:0}
+.panel{background:var(--panel);border-radius:16px;padding:16px 20px;backdrop-filter:blur(3px)}
+.btn{background:var(--accent);color:#1a1210;font-weight:700;border-radius:14px;padding:16px 28px;font-size:20px}
+.btn.big{width:min(440px,90vw);padding:26px;font-size:32px;border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.35);transition:transform .15s}
+.btn.big:hover{transform:translateY(-3px)}
+.btn.ghost{background:var(--panel);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+input{font:inherit;font-size:18px;padding:14px 16px;border-radius:12px;border:0;background:rgba(0,0,0,.35);color:var(--ink);min-width:0}
+.coins{display:flex;gap:10px;align-items:center;justify-content:center}
+.coins img{width:44px;height:44px}
+.coins b{font-size:28px;color:var(--gold)}
+.top{display:flex;gap:12px;align-items:center;justify-content:space-between;width:100%;max-width:980px}
+.menu{display:flex;flex-direction:column;gap:14px;align-items:center}
+/* blur over the live 3D scene makes some Android WebViews drop the whole page every few frames (black/white flicker): no blur on touch devices */
+@media (pointer:coarse),(hover:none){*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}}
+html.lowfx *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+#bgmap{position:fixed;inset:0;width:100%;height:100%;border:0;z-index:-2;pointer-events:none}
+#bgdim{position:fixed;inset:0;z-index:-1;background:rgba(10,8,14,.28);pointer-events:none}
+#rankbar{display:flex;gap:12px;align-items:center;background:var(--panel);padding:8px 16px;border-radius:14px;text-align:left}
+#rankbar img{width:64px;height:64px}
+#rankbar .bar{height:6px;border-radius:3px;background:rgba(255,255,255,.15);margin:5px 0;width:190px;max-width:50vw}
+#rankbar .bar i{display:block;height:100%;border-radius:3px}
+#rankbar small{color:var(--muted)}

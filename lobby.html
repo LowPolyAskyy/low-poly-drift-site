@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Lobby - Low Poly Drift</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1a1216">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Low Poly Drift">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="ui.css">
+<style>
+.cols{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:flex-start;width:100%;max-width:980px}
+.cols .panel{flex:1 1 320px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.row{display:flex;gap:8px}
+.row input{flex:1;text-transform:uppercase;letter-spacing:2px}
+#rooms{display:flex;flex-direction:column;gap:8px}
+.rm{display:flex;gap:10px;align-items:center;background:rgba(0,0,0,.25);border-radius:12px;padding:8px 12px}
+.rm .i{flex:1;min-width:0}.rm .i small{color:var(--muted);display:block}
+.tag{font-size:12px;padding:2px 8px;border-radius:99px;color:#111;font-weight:700}
+.w{background:#7dff9b}.r{background:#ffb36b}
+#err{color:#ffb0a0;min-height:20px;text-align:center}
+#lan{font-size:13px;color:var(--muted);text-align:center}
+.name{display:flex;gap:8px;align-items:center}.name input{width:170px}
+</style>
+</head>
+<body>
+<iframe id="bgmap" src="game.html?bg=1" tabindex="-1" aria-hidden="true"></iframe><div id="bgdim"></div>
+<div class="top"><button class="btn ghost" id="back">&larr; Menu</button><h2>Lobby</h2><div class="name"><span>Name</span><input id="name" maxlength="12" placeholder="Player"></div></div>
+<div id="err"></div>
+<div class="cols">
+  <div class="panel">
+    <h2>Private</h2>
+    <p>Play with friends using a room code. While the room fills up you wait in the Trick Park (ramps, tricks, drifting). The host starts the race, everybody votes for 1 of 3 maps.</p>
+    <button class="btn" id="cpriv">Create private</button>
+    <div class="row"><input id="code" maxlength="12" placeholder="Room code"><button class="btn" id="jpriv">Join private</button></div>
+  </div>
+  <div class="panel">
+    <h2>Public</h2>
+    <button class="btn" id="cpub">Create public</button>
+    <p>Active public rooms</p>
+    <div id="rooms"><p>Loading...</p></div>
+  </div>
+</div>
+<button class="btn ghost" id="solo">Practice solo</button>
+<div id="lan"></div>
+<script src="config.js"></script>
+<script src="device.js"></script>
+<script src="cars.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+try{$('name').value=localStorage.dn_name||''}catch(e){}
+function play(q){const n=$('name').value.trim()||'Player';try{localStorage.dn_name=n}catch(e){}go('game.html?'+q)}
+$('back').onclick=()=>go('index.html');
+$('solo').onclick=()=>play('');
+$('cpriv').onclick=()=>play('mode=create-private');
+$('cpub').onclick=()=>play('mode=create-public');
+$('jpriv').onclick=async()=>{
+ const code=$('code').value.toUpperCase().replace(/[^A-Z0-9]/g,'');$('err').textContent='';
+ if(!code){$('err').textContent='Enter a room code';return}
+ try{const r=await (await fetch(API('/room?code='+code))).json();
+  if(!r.exists){$('err').textContent='Private room not found';return}
+  if(r.players>=r.max){$('err').textContent='That room is full';return}
+ }catch(e){$('err').textContent='Cannot reach the server';return}
+ play('mode=join-private&room='+code)};
+$('rooms').onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.k)play('mode=join-public&key='+encodeURIComponent(b.dataset.k))};
+async function refresh(){
+ try{const l=await (await fetch(API('/rooms'))).json();
+  $('rooms').innerHTML=l.length?l.map(r=>`<div class="rm"><div class="i"><b>${esc(r.name)}</b><small>Host: ${esc(r.host)} &middot; ${r.players}/${r.max} players</small></div><span class="tag ${r.racing?'r':'w'}">${r.racing?'Racing':'Waiting'}</span><button class="btn" data-k="${esc(r.key)}" ${r.players>=r.max?'disabled':''}>Join</button></div>`).join(''):'<p>No public rooms right now. Create one!</p>'}
+ catch(e){$('rooms').innerHTML='<p>Cannot reach the server</p>'}}
+refresh();setInterval(refresh,2000);
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname))fetch('/lan').then(r=>r.json()).then(l=>{if(l.length)$('lan').innerHTML='Friends on your Wi-Fi: <b>'+esc(l[0].url)+'</b>'}).catch(()=>{});
+</script>
+</body>
+</html>

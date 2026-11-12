@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Low Poly Drift</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1a1216">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Low Poly Drift">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="ui.css">
+<style>
+body{justify-content:center}
+.sub{font-size:15px}
+.logo{display:block;width:min(520px,86vw);height:auto;filter:drop-shadow(0 6px 14px rgba(0,0,0,.35))}
+</style>
+</head>
+<body>
+<iframe id="bgmap" src="game.html?bg=1" tabindex="-1" aria-hidden="true"></iframe><div id="bgdim"></div>
+<h1><img class="logo" src="logo.png" alt="Low Poly Drift"></h1>
+<div class="panel coins" id="coins"></div>
+<div id="rankbar"></div>
+<div class="menu">
+  <button class="btn big" id="play">Play</button>
+  <button class="btn big" id="shop">Shop</button>
+  <button class="btn big" id="settings">Settings</button>
+  <button class="btn ghost" id="dl" style="display:none">Download the app</button>
+</div>
+<script src="config.js"></script>
+<script src="device.js"></script>
+<script src="cars.js"></script>
+<script>
+document.getElementById('coins').innerHTML=coinImg+'<b>'+prog.coins+'</b><span>coins</span><span style="color:var(--muted)">&middot; '+RANKS[prog.car].v+'</span>';
+document.getElementById('rankbar').innerHTML=rankBarHTML(prog.elo);
+document.getElementById('play').onclick=()=>go('lobby.html');
+document.getElementById('shop').onclick=()=>go('shop.html');
+document.getElementById('settings').onclick=()=>go('settings.html');
+if(!window.IN_APP){const d=document.getElementById('dl');d.style.display='';d.onclick=()=>go('download.html')}  // website only
+</script>
+</body>
+</html>

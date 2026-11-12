@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Settings - Low Poly Drift</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1a1216">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Low Poly Drift">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="ui.css">
+<style>
+body{justify-content:flex-start}
+.wrap{width:100%;max-width:640px;display:flex;flex-direction:column;gap:14px}
+.panel h3{margin:0 0 10px;font-size:20px}
+.set{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:10px 0;border-top:1px solid rgba(255,255,255,.08)}
+.set:first-of-type{border-top:0}
+.set .t{flex:1 1 200px;min-width:0}.set .t b{display:block;font-size:16px}.set .t small{color:var(--muted);font-size:13px;line-height:1.35;display:block}
+.seg{display:flex;gap:4px;background:rgba(0,0,0,.28);padding:4px;border-radius:12px}
+.seg button{padding:9px 14px;border-radius:9px;background:transparent;color:var(--muted);font-weight:700;font-size:14px}
+.seg button.on{background:var(--accent);color:#1a1210}
+input[type=range]{width:180px;accent-color:var(--accent);padding:0;background:none}
+select{font:inherit;font-size:14px;padding:10px 12px;border-radius:10px;border:0;background:rgba(0,0,0,.35);color:var(--ink);max-width:240px}
+.meter{height:10px;border-radius:5px;background:rgba(255,255,255,.14);overflow:hidden;width:180px}.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#7dff9b,#ffd84a,#ff5a4a);transition:width .08s}
+.btn.sm{padding:10px 16px;font-size:15px}
+#msg{color:var(--muted);font-size:13px;min-height:18px;text-align:right}
+.off .vc{opacity:.4;pointer-events:none}
+</style>
+</head>
+<body>
+<iframe id="bgmap" src="game.html?bg=1" tabindex="-1" aria-hidden="true"></iframe><div id="bgdim"></div>
+<div class="top"><button class="btn ghost" id="back">&larr; Menu</button><h2>Settings</h2><span></span></div>
+<div class="wrap" id="wrap">
+ <div class="panel">
+  <h3>Gameplay</h3>
+  <div class="set"><div class="t"><b>Speed units</b><small>Speedometer and top speed</small></div><div class="seg" data-k="units"><button data-v="kmh">km/h</button><button data-v="mph">mph</button></div></div>
+  <div class="set"><div class="t"><b>Camera shake</b><small>Shaking when you crash, land or boost</small></div><div class="seg" data-k="shake" data-num="1"><button data-v="0">Off</button><button data-v="0.4">Low</button><button data-v="1">Normal</button></div></div>
+  <div class="set"><div class="t"><b>Touch controls</b><small>Phones and tablets: steer with a joystick or with arrow buttons</small></div><div class="seg" data-k="ctrl"><button data-v="joy">Joystick</button><button data-v="arrows">Arrows</button></div></div>
+  <div class="set"><div class="t"><b>Camera</b><small>Free look: drag on the screen (finger or mouse) to turn the camera around the car. &ldquo;Springs back&rdquo; returns behind the car when you let go, &ldquo;Stays&rdquo; keeps your view</small></div><div class="seg" data-k="camMode"><button data-v="follow">Follow car</button><button data-v="free">Free, springs back</button><button data-v="hold">Free, stays</button></div></div>
+  <div class="set"><div class="t"><b>Camera distance</b><small>How far the camera is behind the car</small></div><div class="seg" data-k="camDist"><button data-v="close">Close</button><button data-v="normal">Normal</button><button data-v="far">Far</button></div></div>
+  <div class="set"><div class="t"><b>Field of view</b><small>Wider shows more of the road, but things look smaller</small></div><div class="seg" data-k="fov" data-num="1"><button data-v="50">Narrow</button><button data-v="58">Normal</button><button data-v="70">Wide</button><button data-v="82">Very wide</button></div></div>
+  <div class="set"><div class="t"><b>Graphics</b><small>Low turns off shadows, the 3D menu background and blur effects &mdash; pick it if the game lags or the screen flickers</small></div><div class="seg" data-k="quality"><button data-v="low">Low</button><button data-v="med">Medium</button><button data-v="high">High</button></div></div>
+ </div>
+ <div class="panel" id="vcp">
+  <h3>Voice chat</h3>
+  <div class="set"><div class="t"><b>Voice chat</b><small>In online rooms a microphone button appears on the left side. Audio goes directly between players.</small></div><div class="seg" data-k="vcOn" data-bool="1"><button data-v="1">On</button><button data-v="0">Off</button></div></div>
+  <div class="vc">
+   <div class="set"><div class="t"><b>Voice volume</b><small>How loud other players are</small></div><input type="range" id="vol" min="0" max="1" step="0.05"></div>
+   <div class="set"><div class="t"><b>Microphone mode</b><small>Push-to-talk: hold the V key to speak</small></div><div class="seg" data-k="vcPtt" data-bool="1"><button data-v="0">Open mic</button><button data-v="1">Push-to-talk</button></div></div>
+   <div class="set"><div class="t"><b>Microphone</b><small>Input device</small></div><select id="mic"><option value="">Default</option></select></div>
+   <div class="set"><div class="t"><b>Test microphone</b><small id="mt">Speak and watch the bar</small></div><div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end"><div class="meter"><i id="lv"></i></div><button class="btn sm" id="test">Start test</button></div></div>
+  </div>
+ </div>
+ <div class="panel"><div class="set"><div class="t"><b>Reset settings</b><small>Back to the defaults (your cars, wraps and coins are not touched)</small></div><button class="btn ghost sm" id="reset">Reset</button></div></div>
+ <div id="msg"></div>
+</div>
+<script src="config.js"></script>
+<script src="device.js"></script>
+<script src="cars.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const DEF={units:'kmh',shake:1,quality:'high',vcOn:true,vcVol:1,vcPtt:false,mic:'',ctrl:'joy',camMode:'follow',camDist:'normal',fov:58};
+function paint(){
+ document.querySelectorAll('.seg').forEach(s=>{const k=s.dataset.k;let cur=SET[k];if(s.dataset.bool)cur=cur?'1':'0';else if(s.dataset.num)cur=String(+cur);
+  s.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===String(cur)))});
+ $('vol').value=SET.vcVol;$('wrap').classList.toggle('off',!SET.vcOn);document.getElementById('vcp').classList.toggle('off',!SET.vcOn)}
+function flash(t){$('msg').textContent=t;clearTimeout(flash.t);flash.t=setTimeout(()=>$('msg').textContent='',1500)}
+function save(){saveSet();flash('Saved')}
+document.querySelectorAll('.seg').forEach(s=>s.onclick=e=>{const b=e.target.closest('button');if(!b)return;const k=s.dataset.k;
+ SET[k]=s.dataset.bool?b.dataset.v==='1':s.dataset.num?+b.dataset.v:b.dataset.v;paint();save()});
+$('vol').oninput=()=>{SET.vcVol=+$('vol').value;saveSet()};$('vol').onchange=()=>flash('Saved');
+$('reset').onclick=()=>{Object.assign(SET,DEF);stopTest();saveSet();paint();loadMics();flash('Settings reset')};
+$('back').onclick=()=>go('index.html');
+
+// ---- microphone list + test
+async function loadMics(){
+ if(!navigator.mediaDevices||!navigator.mediaDevices.enumerateDevices)return;
+ try{const d=(await navigator.mediaDevices.enumerateDevices()).filter(x=>x.kind==='audioinput');
+  $('mic').innerHTML='<option value="">Default</option>'+d.map((x,i)=>`<option value="${x.deviceId}">${(x.label||'Microphone '+(i+1)).replace(/</g,'&lt;')}</option>`).join('');
+  $('mic').value=d.some(x=>x.deviceId===SET.mic)?SET.mic:''}catch(e){}}
+$('mic').onchange=()=>{SET.mic=$('mic').value;save();if(testing){stopTest();startTest()}};
+let testing=false,tstream=null,tac=null,traf=0;
+async function startTest(){
+ try{tstream=await navigator.mediaDevices.getUserMedia({audio:SET.mic?{deviceId:{exact:SET.mic}}:true})}
+ catch(e){$('mt').textContent=e&&(e.name==='NotAllowedError'||e.name==='SecurityError')?(window.IN_APP?'Microphone blocked \u2014 allow it for the app in your phone settings':'Microphone blocked \u2014 allow it in the browser'):!navigator.mediaDevices?'Microphone not supported here':'No microphone found';return}
+ tac=new (window.AudioContext||window.webkitAudioContext)();const an=tac.createAnalyser();an.fftSize=256;tac.createMediaStreamSource(tstream).connect(an);
+ const buf=new Uint8Array(an.frequencyBinCount);testing=true;$('test').textContent='Stop test';$('mt').textContent='Speak and watch the bar';
+ (function loop(){if(!testing)return;an.getByteFrequencyData(buf);let v=0;for(const x of buf)v+=x;v/=buf.length;$('lv').style.width=Math.min(100,v*3.2)+'%';traf=requestAnimationFrame(loop)})();
+ loadMics()}
+function stopTest(){testing=false;cancelAnimationFrame(traf);if(tstream)tstream.getTracks().forEach(t=>t.stop());tstream=null;if(tac){try{tac.close()}catch(e){}tac=null}$('lv').style.width='0';$('test').textContent='Start test'}
+$('test').onclick=()=>testing?stopTest():startTest();
+addEventListener('pagehide',stopTest);
+paint();loadMics();
+</script>
+</body>
+</html>

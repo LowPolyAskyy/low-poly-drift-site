@@ -1,0 +1,5 @@
+{
+  "android": { "url": "https://github.com/LowPolyAskyy/Low-Poly-Drift/releases/download/v1.0/Low_Poly_Drift.apk", "size": "~8 MB" },
+  "windows": { "url": "https://github.com/LowPolyAskyy/Low-Poly-Drift/releases/download/v1.0/lowpolydrift.exe", "size": "~75 MB" },
+  "ios":     { "url": "" }
+}
