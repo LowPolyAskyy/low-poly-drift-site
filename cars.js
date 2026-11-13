@@ -30,7 +30,10 @@ const RANKS=[
 {n:'Steel Truck',v:'Steel Truck',k:'cyber',cat:'truck',ui:'#c4c9d0',c:0xc4c9d0,ac:0xffffff,dw:0,top:1.2,acc:1.26,steer:1.0,grip:1.1,price:2300,sx:1,sy:1,sz:1},
 {n:'Monster Truck',v:'Monster Truck',k:'monster',cat:'monster',ui:'#3a9d23',c:0x3a9d23,ac:0xfff2b0,dw:0,top:1.1,acc:1.28,steer:0.92,grip:1.34,price:2800,sx:1,sy:1,sz:1},
 {n:'Formula Racer',v:'Formula Racer',k:'formula',cat:'formula',ui:'#e10600',c:0xe10600,ac:0xffffff,dw:0,top:1.34,acc:1.38,steer:1.16,grip:1.2,price:5800,sx:1,sy:1,sz:1},
-{n:'Neon Hover',v:'Neon Hover',k:'neon',cat:'futuristic',ui:'#2b1b4a',c:0x2b1b4a,ac:0x00f0ff,dw:0,top:1.37,acc:1.44,steer:1.15,grip:1.15,price:6400,sx:1,sy:1,sz:1}];
+{n:'Neon Hover',v:'Neon Hover',k:'neon',cat:'futuristic',ui:'#2b1b4a',c:0x2b1b4a,ac:0x00f0ff,dw:0,top:1.37,acc:1.44,steer:1.15,grip:1.15,price:6400,sx:1,sy:1,sz:1},
+{n:'Santa Sleigh',v:'Santa Sleigh',k:'sleigh',cat:'christmas',x:1,ui:'#c8102e',c:0xc8102e,ac:0xffe36a,dw:0,top:1.26,acc:1.34,steer:1.12,grip:1.18,price:3600,sx:1,sy:1,sz:1},
+{n:'Snow Plow',v:'Snow Plow',k:'plow',cat:'christmas',x:1,ui:'#f2a900',c:0xf2a900,ac:0xffa000,dw:0,top:0.96,acc:1.02,steer:0.88,grip:1.2,price:900,sx:1,sy:1,sz:1},
+{n:'Candy Cane Rally',v:'Candy Cane Rally',k:'candy',cat:'christmas',x:1,ui:'#e8e8ee',c:0xe8e8ee,ac:0xff3a5c,dw:0,top:1.1,acc:1.16,steer:1.06,grip:1.1,price:1500,sx:1,sy:1,sz:1}];
 // coins buy vehicles. Index 0 (the starter car) is free.
 const PRICES=RANKS.map(c=>c.price);
 // ---------- ranked tiers (Elo) ----------
@@ -98,14 +101,55 @@ W('toxic','Toxic Waves','epic',14,[0x1a2a10,0x9bff2b]),W('flame-p','Violet Blaze
 W('ice','Ice','epic',9,[0x7fd6ff,0x2b3a9a,0xffffff]),W('hex-n','Cyber Hive','epic',17,[0x0b1d33,0x00e0ff]),
 W('holo','Hologram','legendary',24,[0xffffff]),W('diamond','Black Diamond','legendary',0,[0x0b0b0e],1,[140,0x8899ff]),
 W('rose','Rose Gold','legendary',0,[0xe8a08a],1,[110,0xffd8c8]),W('inferno','Inferno','legendary',23,[0x100606,0xff2a00,0xffe14a],1.4)];
+
+// ---------- CHRISTMAS EVENT 2026 (1 Dec - 3 Jan, Italy time) ----------
+// ---------- BETA TEST: open  yoursite/?betatest=christmas  to see an update early (saved on this device); ?betatest=off turns it off ----------
+const BETA=(()=>{ // beta flag: remembered in localStorage, sessionStorage AND a cookie (any of them can be blocked), and carried in every link by go()
+ let v='';
+ try{const m=location.search.match(/[?&]betatest=([\w-]+)/i);if(m){v=m[1].toLowerCase();
+  try{if(v==='off'){localStorage.removeItem('dn_beta');sessionStorage.removeItem('dn_beta');document.cookie='dn_beta=;path=/;max-age=0'}
+   else{localStorage.dn_beta=v;sessionStorage.dn_beta=v;document.cookie='dn_beta='+v+';path=/;max-age=31536000;SameSite=Lax'}}catch(e){}
+  return v==='off'?'':v}}catch(e){}
+ try{v=localStorage.dn_beta||''}catch(e){}
+ if(!v)try{v=sessionStorage.dn_beta||''}catch(e){}
+ if(!v)try{const m=document.cookie.match(/(?:^|; )dn_beta=([\w-]+)/);if(m)v=m[1]}catch(e){}
+ return v})();
+const XMAS_ON=()=>{if(BETA==='christmas')return true;try{const p=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Rome',year:'numeric',month:'numeric',day:'numeric'}).formatToParts(new Date()),g=t=>+p.find(x=>x.type===t).value,y=g('year'),m=g('month'),d=g('day');return(y===2026&&m===12)||(y===2027&&m===1&&d<=3)}catch(e){return false}};
+const X=(id,n,r,p,c,s,m)=>Object.assign(W('x-'+id,n,r,p,c,s,m),{x:1});
+WRAPS.push(
+// common (14)
+X('santa','Santa Red','common',0,[0xc8102e]),X('pine','Pine Green','common',0,[0x1f6b3a]),X('snow','Snowfall','common',0,[0xf4f8ff]),
+X('berry','Holly Berry','common',0,[0x9b1030]),X('frost','Frosty Blue','common',0,[0x9fd6ff]),X('cocoa','Hot Cocoa','common',0,[0x6b3f27]),
+X('ginger','Gingerbread','common',0,[0xc98a4b]),X('mint','Peppermint','common',0,[0x7be0b8]),X('plum','Plum Pudding','common',0,[0x4a1d3a]),
+X('night','Silent Night','common',0,[0x10204a]),X('elf','Elf Green','common',0,[0x2fa84f]),X('cran','Cranberry','common',0,[0xa31245]),
+X('dots-w','Snow Dots','common',5,[0x1f6b3a,0xffffff]),X('dots-r','Cherry Dots','common',5,[0xc8102e,0xffffff]),
+// rare (13)
+X('cane','Candy Cane','rare',3,[0xffffff,0xc8102e],1.6),X('cane-g','Elf Stripes','rare',3,[0xffffff,0x1f8a45],1.6),
+X('plaid','Christmas Plaid','rare',13,[0xa31620,0x0f2a17,0xf2e6a0]),X('plaid-g','Forest Plaid','rare',13,[0x1f5a30,0x0b0f0c,0xf0c75a]),
+X('check-x','Holiday Check','rare',2,[0xc8102e,0xffffff]),X('stars-x','Star of Bethlehem','rare',18,[0x0e1a3d,0xffffff,0xffe36a]),
+X('zig-x','Mistletoe Zigzag','rare',6,[0x174d2c,0xe8f5ea]),X('hex-x','Snowflake Hive','rare',17,[0x1b3a6b,0xcfe8ff]),
+X('chev-x','Gold Ribbon','rare',19,[0x8b0f1a,0xffcf00]),X('pixel-x','Pixel Tree','rare',21,[0x1f6b3a,0x7bd62e,0x0f3a1f]),
+X('leo-x','Reindeer Fur','rare',20,[0x9b6a3a,0x2a1a0a]),X('camo-x','Winter Camo','rare',4,[0xdfe8f2,0x9fb4c8,0x5f7790]),
+X('race-x','Santa Racing','rare',1,[0xc8102e,0xffffff,0x15151a]),
+// epic (9)
+X('flame-x','Yule Log','epic',7,[0x1a0f0a,0xff5a10,0xffd84a]),X('aurora-x','Northern Lights','epic',22,[0x08142e,0x2bffa0,0x6bb0ff]),
+X('ice-x','Frozen Lake','epic',9,[0x9fe0ff,0x2b4aa0,0xffffff]),X('tiger-x','Tiger Candy','epic',12,[0xc8102e,0xffffff]),
+X('argyle-x','Gift Argyle','epic',15,[0x1f6b3a,0xc8102e,0xf0c75a]),X('waves-x','Icy Waves','epic',14,[0x1d5fd1,0xe8f5ff]),
+X('carbon-x','Coal & Ember','epic',8,[0x17181b,0x3a1a10,0xff5a10],1,[60,0x885544]),X('lava-x','Fireplace','epic',23,[0x1a0f0f,0xff4a10,0xffd060]),
+X('sunset-x','Winter Sunset','epic',9,[0xff6a3c,0x3a1d7a,0xffd08a]),
+// legendary (4)
+X('gold-x','Golden Bell','legendary',0,[0xffc830],1,[110,0xfff0a8]),X('chrome-x','Silver Bells','legendary',0,[0xdfe6f0],1,[120,0xffffff]),
+X('holo-x','Snow Globe','legendary',24,[0xffffff]),X('nebula-x','Christmas Eve Sky','legendary',10,[0x08102a,0x2bd68a,0xd62b4a]));
 const WRAP_BY=Object.fromEntries(WRAPS.map(w=>[w.id,w]));
 const BOXES=[
 {id:'street',n:'Street Box',price:150,ui:'#5aa7ff',odds:{common:.70,rare:.24,epic:.055,legendary:.005}},
 {id:'racer',n:'Racer Box',price:450,ui:'#c46bff',odds:{common:.30,rare:.50,epic:.17,legendary:.03}},
-{id:'legend',n:'Legend Box',price:1200,ui:'#ffc83a',odds:{common:0,rare:.40,epic:.45,legendary:.15}}];
+{id:'legend',n:'Legend Box',price:1200,ui:'#ffc83a',odds:{common:0,rare:.40,epic:.45,legendary:.15}},
+{id:'xmas',n:'Christmas Box',price:500,ui:'#c8102e',xmas:true,odds:{common:.45,rare:.35,epic:.16,legendary:.04}}];
+const BOXES_ON=()=>BOXES.filter(b=>!b.xmas||XMAS_ON());
 function rollBox(b){let r=Math.random(),a=0,rar=RAR_ORDER.filter(k=>b.odds[k]>0).pop();
  for(const k of RAR_ORDER){a+=b.odds[k]||0;if(r<a){rar=k;break}}
- const pool=WRAPS.filter(w=>w.r===rar);return pool[Math.floor(Math.random()*pool.length)]}
+ const pool=WRAPS.filter(w=>w.r===rar&&!!w.x===!!b.xmas);return pool[Math.floor(Math.random()*pool.length)]}
 // CSS approximation of a wrap, for the little swatches in the shop
 function wrapCSS(w){const h=c=>'#'+c.toString(16).padStart(6,'0'),a=h(w.c[0]),b=h(w.c[1]),c=h(w.c[2]);
  switch(w.p){
@@ -153,4 +197,6 @@ const saveProg=()=>{try{localStorage.dn_coins=prog.coins;localStorage.dn_owned2=
 const hex=c=>c.toString(16).padStart(6,'0');
 const coinImg='<img src="emblems/coin.webp" alt="coins" onerror="this.style.display=\'none\'">';
 // navigate keeping the phone-test flag (?m=1)
-const go=u=>{location.href=u+(/[?&]m=1/.test(location.search)?(u.includes('?')?'&':'?')+'m=1':'')};
+const go=u=>{const q=[];if(/[?&]m=1/.test(location.search))q.push('m=1');if(BETA)q.push('betatest='+BETA);location.href=u+(q.length?(u.includes('?')?'&':'?')+q.join('&'):'')};
+// the little background game behind the menus gets the beta flag too
+(()=>{const f=document.getElementById('bgmap');if(f&&f.dataset.src)f.src=f.dataset.src+(BETA?'&betatest='+BETA:'')})();

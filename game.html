@@ -650,12 +650,15 @@ const MAPS=[
 {n:'Frozen Peaks',k:'snow',hill:9,hp:2,c:ring(155,5,.12,3,.1,1.2,1.1),g:0xeef4fa,th:[.45,.08,.25,.4,.2],t:0x7fb2e0,f:0xdcebf7,fn:60,ff:300,hc:0xe8f2ff,hg:0x9ab0c8,hi:1,sc:0xfff4e6,si:.75,b1:[.9,.95,1],b2:[.3,.55,.85],d:[-.4,.3,.8],dc:0xffffff,ds:16,cl:10,cc:0xffffff,mtn:0xdfeaf5},
 {n:'Ember Crater',k:'mesa',hill:20,hp:0,sp:1,lava:1,mh:[0,.04,.3,.1,.08],c:ring(150,4,.18,3,.08,2.4,1),g:0x241716,t:0x3a1020,f:0xd2542a,fn:40,ff:240,hc:0xff9a70,hg:0x3a1a14,hi:.8,sc:0xff8a50,si:.7,b1:[1,.4,.1],b2:[.15,.1,.1],neon:1,d:[.3,.12,.9],dc:0xffb060,ds:26,hl:.8,mtn:0x3a2020,cl:8,cc:0x6b3028},
 {n:'Coral Coast',k:'palm',shore:50,c:ring(140,2,.22,4,.08,.8,1.25),g:0xf2dca8,bk:0xd9bd86,t:0x39b6e6,f:0xcdf0f2,fn:90,ff:340,hc:0xfff6e0,hg:0xc9b27a,hi:1,sc:0xfff0d0,si:1,b1:[1,1,1],b2:[.1,.6,.8],d:[.2,.5,.85],dc:0xffffff,ds:20,cl:14,cc:0xffffff},
-{n:'Autumn Ridge',k:'leaf',hill:5,hp:3,th:[0,.12,.8,.42,.14],c:ring(150,3,.2,5,.08,1.9,1.15),g:0xb08a4e,t:0xf3a35c,f:0xffdcb0,fn:60,ff:300,hc:0xffe2bd,hg:0x7a5a30,hi:.9,sc:0xffc88a,si:.9,b1:[.95,.9,.8],b2:[.8,.35,.15],d:[-.5,.25,.8],dc:0xfff0c0,ds:24,cl:10,cc:0xffe9d0,mtn:0x9a5a48}];
+{n:'Autumn Ridge',k:'leaf',hill:5,hp:3,th:[0,.12,.8,.42,.14],c:ring(150,3,.2,5,.08,1.9,1.15),g:0xb08a4e,t:0xf3a35c,f:0xffdcb0,fn:60,ff:300,hc:0xffe2bd,hg:0x7a5a30,hi:.9,sc:0xffc88a,si:.9,b1:[.95,.9,.8],b2:[.8,.35,.15],d:[-.5,.25,.8],dc:0xfff0c0,ds:24,cl:10,cc:0xffe9d0,mtn:0x9a5a48},
+{n:'Candy Cane Lane',k:'snow',x:1,xm:'candy',nt:1,hill:6,hp:2,c:ring(150,4,.16,3,.09,.7,1.2),g:0xf6f9ff,th:[.33,.05,.55,.28,.12],t:0xffb3c8,f:0xfff0f4,fn:70,ff:320,hc:0xfff2f4,hg:0xa8b8d0,hi:1,sc:0xffeedd,si:.85,b1:[.96,.96,.98],b2:[.85,.1,.15],d:[-.3,.35,.8],dc:0xffffff,ds:18,cl:12,cc:0xffffff,mtn:0xf2d8e2},
+{n:'Aurora Night',k:'snow',x:1,xm:'aurora',nt:1,aur:1,hill:8,hp:2,c:ring(160,3,.18,5,.07,2.1,1.15),g:0xc7d8f0,th:[.38,.06,.5,.2,.1],t:0x050b24,f:0x1d6b6a,fn:40,ff:260,hc:0x6f8fd8,hg:0x1a2a4a,hi:.75,sc:0xaecbff,si:.45,b1:[.1,.9,.5],b2:[.9,.1,.3],neon:1,st:1,d:[.4,.5,-.5],dc:0xcfe0ff,ds:14,hl:1.2,mtn:0x28406a}];
 const hl=new THREE.PointLight(0xffe9b0,0,45,1.5);hl.position.set(0,2.5,6);root.add(hl);
 function setup(M){
  scene.fog=new THREE.Fog(M.f,M.fn,M.ff);hemi.color.set(M.hc);hemi.groundColor.set(M.hg);hemi.intensity=M.hi;sun.color.set(M.sc);sun.intensity=M.si;hl.intensity=M.hl||0;
  skyM.uniforms.a.value.set(M.t);skyM.uniforms.b.value.set(M.f);
  skyG.children.slice(1).forEach(o=>skyG.remove(o));
+ if(M.aur)auroraSky();
  if(M.st){const p=[];for(let i=0;i<700;i++){const y=rnd()*.9+.1,r=Math.sqrt(1-y*y),a=rnd()*TAU;p.push(Math.cos(a)*r*480,y*480,Math.sin(a)*r*480)}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));skyG.add(new THREE.Points(g,new THREE.PointsMaterial({size:2,sizeAttenuation:false,fog:false,color:0xffffff})))}
  const v=new THREE.Vector3(...M.d).normalize().multiplyScalar(440);
@@ -685,18 +688,120 @@ function ground(M){
  const far=new THREE.Mesh(farGeo,sh?new THREE.MeshLambertMaterial({color:0x2aa7c9,transparent:true,opacity:.85}):new THREE.MeshLambertMaterial({color:M.g}));
  far.rotation.x=-Math.PI/2;far.position.y=sh?-2.4:-.12;world.add(far);
 }
-function inst(gs,ms,T,gap,spr,f){T=Math.round(T*SC);
- const Ms=gs.map((g,j)=>{const m=new THREE.InstancedMesh(g,ms[j],T);m.castShadow=true;return m});let n=0;
+function inst(gs,ms,T,gap,spr,f,ca){T=Math.round(T*SC);
+ const Ms=gs.map((g,j)=>{const m=new THREE.InstancedMesh(g,ms[j],T);m.castShadow=!(ms[j] instanceof THREE.MeshBasicMaterial);return m});let n=0;
  for(let t=0;t<T*8&&n<T;t++){
   const i=rnd()*N|0,o=(rnd()<.5?-1:1)*(WALL+gap+rnd()*spr),x=P[i].x+NRM[i].x*o,z=P[i].z+NRM[i].z*o;
   const nr=nearest(x,z),nn=nr[1];if(nn<WALL+gap-1)continue;
   const [sx,sy,sz,c]=f();dm.position.set(x,HF(nn,nr[0],x,z),z);dm.rotation.set(0,rnd()*6,0);dm.scale.set(sx,sy,sz);dm.updateMatrix();
-  Ms.forEach((m,j)=>{m.setMatrixAt(n,dm.matrix);if(j||Ms.length==1)m.setColorAt(n,c)});n++}
+  Ms.forEach((m,j)=>{m.setMatrixAt(n,dm.matrix);if(j||Ms.length==1||ca)m.setColorAt(n,c)});n++}
  Ms.forEach(m=>{m.count=n;world.add(m)});dm.scale.set(1,1,1);dm.rotation.set(0,0,0);
 }
+// ---------- Christmas scenery (Aurora Night, Candy Cane Lane) ----------
+// Small helpers to build ONE merged, vertex-coloured, flat-shaded geometry out of several primitives; the result is instanced like every other prop.
+function gcol(g,c){c=new THREE.Color(c);const n=g.attributes.position.count,a=new Float32Array(n*3);for(let i=0;i<n;i++){a[i*3]=c.r;a[i*3+1]=c.g;a[i*3+2]=c.b}g.setAttribute('color',new THREE.BufferAttribute(a,3));return g}
+function gmerge(list,tri){const ps=[],cs=[];
+ list.forEach(g=>{const q=g.index?g.toNonIndexed():g.clone();if(tri)tri(q);ps.push(q.attributes.position.array);cs.push(q.attributes.color.array)});
+ const cat=a=>{let n=0;a.forEach(x=>n+=x.length);const o=new Float32Array(n);let k=0;a.forEach(x=>{o.set(x,k);k+=x.length});return o};
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(cat(ps),3));g.setAttribute('color',new THREE.BufferAttribute(cat(cs),3));g.computeVertexNormals();return g}
+const gp=(g,x,y,z,c,rx,rz,ry)=>{if(rx)g.rotateX(rx);if(rz)g.rotateZ(rz);if(ry)g.rotateY(ry);g.translate(x,y,z);return gcol(g,c)};
+const gico=(r,x,y,z,c,d)=>gp(new THREE.IcosahedronGeometry(r,d||0),x,y,z,c);
+// recolour a non-indexed geometry triangle by triangle with f(cx,cy,cz)->colour (stripes, swirls...)
+function gstripe(g,f){const p=g.attributes.position,a=new Float32Array(p.count*3),c=new THREE.Color();
+ for(let i=0;i<p.count;i+=3){const x=(p.getX(i)+p.getX(i+1)+p.getX(i+2))/3,y=(p.getY(i)+p.getY(i+1)+p.getY(i+2))/3,z=(p.getZ(i)+p.getZ(i+1)+p.getZ(i+2))/3;c.set(f(x,y,z));for(let k=0;k<3;k++){a[(i+k)*3]=c.r;a[(i+k)*3+1]=c.g;a[(i+k)*3+2]=c.b}}
+ g.setAttribute('color',new THREE.BufferAttribute(a,3));return g}
+const LCG=s=>()=>(s=(s*1664525+1013904223)>>>0)/4294967296;
+const XCOL=[0xff3b3b,0xffd84a,0x4aa8ff,0x4aff8a,0xff6ad5];
+// a big decorated pine: 5 tiers, snow caps, golden garlands, baubles, glowing lights and a star. Returns [body, glow]
+function xmasTreeGeo(){const r=LCG(7),B=[],G=[];
+ B.push(gp(new THREE.CylinderGeometry(.8,1.1,3.4,6),0,1.7,0,0x6b4a2b));
+ const T=[[5.2,4.6,2.2],[4.4,4.2,5.2],[3.6,3.8,8],[2.8,3.4,10.6],[1.9,3,12.8]];
+ T.forEach(([rad,h,b],i)=>{
+  B.push(gp(new THREE.ConeGeometry(rad,h,8),0,b+h/2,0,i%2?0x1d6b48:0x17573a));
+  B.push(gp(new THREE.ConeGeometry(rad*.5,h*.42,8),0,b+h*.8,0,0xeef5ff));
+  if(i<4)B.push(gp(new THREE.TorusGeometry(rad*.74,.14,4,14),0,b+h*.3,0,0xffc83a,Math.PI/2));
+  for(let k=0;k<3;k++){const a=(k/3+r()*.3+i*.17)*Math.PI*2,rr=rad*.92;B.push(gico(.55,Math.cos(a)*rr,b+h*.06,Math.sin(a)*rr,[0xe8283c,0xffc83a,0x3a8cff,0xdfe6f0][(i+k)%4],1))}
+  const n=[11,10,8,7,5][i];
+  for(let k=0;k<n;k++){const t=.18+.62*r(),a=(k/n+r()*.06)*Math.PI*2,rr=rad*(1-t)*1.03+.06;G.push(gico(.26,Math.cos(a)*rr,b+h*t,Math.sin(a)*rr,XCOL[(k+i)%5]))}});
+ G.push(gp(new THREE.OctahedronGeometry(1.25,0),0,15.2,0,0xffe27a));G.push(gp(new THREE.OctahedronGeometry(.8,0),0,15.2,0,0xffffff,0,0,Math.PI/4));
+ return[gmerge(B,q=>q.computeVertexNormals()),gmerge(G)]}
+// 3 stacked / side-by-side wrapped presents with ribbons and bows
+function giftGeo(c1,c2,c3,rb){const B=[],r=LCG(c1);
+ const gift=(w,h,d,x,y,z,c,ry)=>{const o=[gp(new THREE.BoxGeometry(w,h,d),0,h/2,0,c),gp(new THREE.BoxGeometry(w*1.03,h*1.03,.32),0,h/2,0,rb),gp(new THREE.BoxGeometry(.32,h*1.03,d*1.03),0,h/2,0,rb),
+  gico(.5,-.42,h+.25,0,rb),gico(.5,.42,h+.25,0,rb),gico(.32,0,h+.15,0,rb)];
+  o.forEach(g=>{g.rotateY(ry);g.translate(x,y,z);B.push(g)})};
+ gift(2.4,2,2.4,0,0,0,c1,.2);gift(1.8,1.5,1.8,.1,2,0,c2,.7);gift(1.5,1.3,1.5,2.3,0,.6,c3,-.3);
+ return gmerge(B)}
+function snowmanGeo(){const B=[],w=0xf6f9ff,k=0x15151a;
+ B.push(gico(1.6,0,1.5,0,w,1),gico(1.2,0,3.5,0,w,1),gico(.9,0,5,0,w,1));
+ B.push(gico(.12,-.3,5.2,.82,k),gico(.12,.3,5.2,.82,k),gp(new THREE.ConeGeometry(.16,1,5),0,4.9,1.3,0xff8a1f,Math.PI/2));
+ [3.9,3.2,2.5].forEach(y=>B.push(gico(.14,0,y,1.1,k)));
+ B.push(gp(new THREE.CylinderGeometry(.95,1,.38,8),0,4.2,0,0xd8283c),gp(new THREE.BoxGeometry(.4,1.1,.2),.5,3.6,.9,0xd8283c));
+ B.push(gp(new THREE.CylinderGeometry(.75,.75,1,8),0,6.2,0,k),gp(new THREE.CylinderGeometry(1.2,1.2,.12,8),0,5.7,0,k),gp(new THREE.CylinderGeometry(.77,.77,.22,8),0,5.95,0,0xd8283c));
+ [-1,1].forEach(s=>B.push(gp(new THREE.CylinderGeometry(.07,.09,2.2,4),s*1.9,3.9,0,0x6b4a2b,0,s*.9)));
+ return gmerge(B)}
+function lampGeo(){const B=[],G=[];
+ B.push(gp(new THREE.CylinderGeometry(.22,.32,9,6),0,4.5,0,0x2c3340),gp(new THREE.CylinderGeometry(.6,.6,.4,6),0,.2,0,0x2c3340),gp(new THREE.ConeGeometry(1.05,.9,4),0,10.5,0,0x2c3340,0,0,Math.PI/4),gico(.35,0,11.1,0,0xffc83a));
+ G.push(gp(new THREE.BoxGeometry(1.25,1.5,1.25),0,9.5,0,0xffe6a0));
+ [[1,1],[-1,1],[1,-1],[-1,-1]].forEach(([x,z])=>B.push(gp(new THREE.BoxGeometry(.16,1.8,.16),x*.62,9.5,z*.62,0x2c3340)));B.push(gp(new THREE.BoxGeometry(1.5,.18,1.5),0,8.55,0,0x2c3340));
+ return[gmerge(B),gmerge(G)]}
+// candy cane (stripes a/b, spiral), hook included
+function caneGeo(a,b){const pts=[];for(let i=0;i<=4;i++)pts.push(new THREE.Vector3(0,i*1.75,0));
+ for(let j=1;j<=9;j++){const t=j/9*Math.PI;pts.push(new THREE.Vector3(1.4-1.4*Math.cos(t),7+1.4*Math.sin(t),0))}
+ pts.push(new THREE.Vector3(2.8,6.2,0));
+ const g=new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),44,.58,6,false).toNonIndexed(),uv=g.attributes.uv,p=g.attributes.position,col=new Float32Array(p.count*3),A=new THREE.Color(a),Bc=new THREE.Color(b);
+ for(let i=0;i<p.count;i+=3){const u=(uv.getX(i)+uv.getX(i+1)+uv.getX(i+2))/3,v=(uv.getY(i)+uv.getY(i+1)+uv.getY(i+2))/3,c=(Math.floor(u*22+v*1.6)&1)?Bc:A;for(let k=0;k<3;k++){col[(i+k)*3]=c.r;col[(i+k)*3+1]=c.g;col[(i+k)*3+2]=c.b}}
+ g.setAttribute('color',new THREE.BufferAttribute(col,3));
+ return gmerge([g,gico(.62,2.8,6.15,0,a,1)])}
+function lollyGeo(c1,c2,sw){const B=[],d=new THREE.CylinderGeometry(2.3,2.3,.5,30);d.rotateX(Math.PI/2);d.translate(0,7.4,0);
+ const D=d.index?d.toNonIndexed():d;gstripe(D,(x,y)=>{const ang=Math.atan2(y-7.4,x),r=Math.hypot(x,y-7.4);return(Math.floor((ang/Math.PI/2+1)*sw+r*.9)&1)?c1:c2});
+ B.push(D,gp(new THREE.CylinderGeometry(.2,.22,7.4,6),0,3.7,0,0xf4f4f8),gico(.5,0,.1,0,c1,0));
+ return gmerge(B)}
+function houseGeo(){const B=[],W=0xf6f9ff;
+ B.push(gp(new THREE.BoxGeometry(6,4,5.2),0,2,0,0xb36a2c),gp(new THREE.ConeGeometry(5.1,3.2,4),0,5.6,0,W,0,0,Math.PI/4),gp(new THREE.BoxGeometry(1,2,1),1.7,6.4,.6,0xb36a2c),gp(new THREE.BoxGeometry(1.2,.3,1.2),1.7,7.5,.6,W));
+ B.push(gp(new THREE.BoxGeometry(1.5,2.4,.3),0,1.2,2.65,0xff6a9a),gp(new THREE.BoxGeometry(1.1,1.1,.3),-2,2.4,2.65,0xffe27a),gp(new THREE.BoxGeometry(1.1,1.1,.3),2,2.4,2.65,0xffe27a));
+ B.push(gp(new THREE.BoxGeometry(6.3,.35,.35),0,4.05,2.7,W),gp(new THREE.BoxGeometry(6.3,.35,.35),0,.2,2.7,W));
+ for(let i=0;i<7;i++)B.push(gico(.34,-2.6+i*.87,3.5,2.7,XCOL[i%5],0));
+ B.push(gico(.4,-.9,2.5,2.75,0xff3b3b),gico(.4,.9,2.5,2.75,0x4aff8a));
+ return gmerge(B)}
+function poleGeo(){const g=new THREE.CylinderGeometry(.4,.4,9,8,1,false).toNonIndexed();g.translate(0,4.5,0);gstripe(g,(x,y,z)=>(Math.floor(y*.8+Math.atan2(z,x)*1.3)&1)?0xd8283c:0xffffff);
+ return gmerge([g,gico(.75,0,9.2,0,0xd8283c,1)])}
+function auroraSky(){ // glowing animated curtains high in the sky
+ const mk=(a0,a1,R,y0,H,c1,c2,ph)=>{const n=90,pos=[],uv=[],idx=[];
+  for(let i=0;i<=n;i++){const u=i/n,a=a0+(a1-a0)*u,y=y0+Math.sin(u*7+ph)*24+Math.sin(u*17+ph*2)*8;
+   for(let j=0;j<=1;j++){pos.push(Math.sin(a)*R,y+j*H,Math.cos(a)*R);uv.push(u,j)}
+   if(i<n){const k=i*2;idx.push(k,k+1,k+2,k+1,k+3,k+2)}}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);
+  const m=new THREE.Mesh(g,new THREE.ShaderMaterial({transparent:true,depthWrite:false,fog:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,uniforms:{t:AURU,a:{value:new THREE.Color(c1)},b:{value:new THREE.Color(c2)},ph:{value:ph}},
+   vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+   fragmentShader:'varying vec2 vUv;uniform float t,ph;uniform vec3 a,b;void main(){float rays=.55+.45*sin(vUv.x*130.+t*.7+ph)*sin(vUv.x*47.-t*.45);float fade=smoothstep(0.,.12,vUv.y)*pow(1.-vUv.y,1.6);float sw=.7+.3*sin(vUv.x*9.+t*.35+ph);gl_FragColor=vec4(mix(a,b,vUv.y*vUv.y*1.4)*rays*sw*1.4,fade*.8);}'}));
+  m.renderOrder=-1;m.frustumCulled=false;skyG.add(m)};
+ mk(-1.5,.5,470,110,230,0x3dffa8,0x7a5cff,0);mk(.9,2.7,470,95,200,0x2bffd0,0xff6ad5,2);mk(3.1,4.9,470,120,240,0x6aff7a,0x3a9bff,4);mk(5.3,6.9,470,100,200,0x44ffc0,0xb06aff,1)}
+const AURU={value:0};
+// all the props: the 'inst' helper places them around the road
+function xmasScen(M){const C=new THREE.Color(),LM=new THREE.MeshLambertMaterial({vertexColors:true}),BM=new THREE.MeshBasicMaterial({vertexColors:true}),W=()=>C.clone().setRGB(1,1,1);
+ const V=(g,m,T,gap,spr,s0,s1)=>inst([g],[m],T,gap,spr,()=>{const s=s0+rnd()*(s1-s0);return[s,s,s,W()]});
+ if(M.xm=='aurora'){
+  const [tb,tg]=xmasTreeGeo();
+  inst([tb,tg],[LM,BM],150,13,170,()=>{const s=1.15+rnd()*1.15;return[s,s*(1+rnd()*.25),s,C.clone().setHSL(.4,.12,.85+rnd()*.15)]},1);
+  inst([tb,tg],[LM,BM],40,6,30,()=>{const s=.45+rnd()*.35;return[s,s,s,W()]},1); // young trees close to the road
+  [[0xd8283c,0xffc83a,0x2f8f5b,0xffd84a],[0x2f6bd8,0xdfe6f0,0xd8283c,0xdfe6f0],[0x2f8f5b,0xd8283c,0xffc83a,0xffffff],[0x8a3fd0,0xffc83a,0x2fa8d8,0xffc83a]].forEach(([a,b,c,r],i)=>V(giftGeo(a,b,c,r),LM,34,4,46,1.3,2.6));
+  V(snowmanGeo(),LM,50,5,60,.9,1.5);
+  const [lb,lg]=lampGeo();inst([lb,lg],[LM,BM],64,2,7,()=>[1,1,1,W()],1);
+ }
+ if(M.xm=='candy'){
+  const rw=[0xd8283c,0xffffff],rb=[0xd8283c,0x17171c];
+  V(caneGeo(...rw),LM,340,6,160,1.2,2.8);V(caneGeo(...rb),LM,210,6,160,1.2,2.6);
+  [[0xff6aa0,0xffffff,5],[0xd8283c,0xffffff,6],[0x2fcfa0,0xffffff,5]].forEach(([a,b,s])=>V(lollyGeo(a,b,s),LM,48,6,120,1.2,2.4));
+  inst([new THREE.SphereGeometry(1,8,4,0,Math.PI*2,0,Math.PI/2)],[new THREE.MeshLambertMaterial({flatShading:true})],220,4,110,()=>{const s=1.3+rnd()*2.6;return[s,s*(.9+rnd()*.4),s,C.clone().setHSL(rnd(),.85,.6)]});
+  V(houseGeo(),LM,26,12,100,1.4,2.2);V(poleGeo(),LM,110,2.5,8,.9,1.2);
+  [[0xd8283c,0xffffff,0x2f8f5b,0xffd84a],[0xff6aa0,0xffffff,0xd8283c,0xffffff],[0x2fcfa0,0xd8283c,0xffd84a,0xffffff]].forEach(([a,b,c,r])=>V(giftGeo(a,b,c,r),LM,24,4,46,1.3,2.4));
+  V(snowmanGeo(),LM,20,5,48,1.1,1.7);
+ }}
 function scen(M){
  const k=M.k,C=new THREE.Color();
- if(k=='pine'||k=='jungle'||k=='snow'){
+ if(M.xm)xmasScen(M);
+ if((k=='pine'||k=='jungle'||k=='snow')&&!M.nt){
   const J=k=='jungle',th=M.th||(J?[.27,.12,.55,.12,.1]:[.3,.07,.38,.26,.14]),tr=new THREE.CylinderGeometry(.4,.55,2,5);tr.translate(0,1,0);
   const c1=new THREE.ConeGeometry(2.6,3.4,6);c1.translate(0,3.2,0);const c2=new THREE.ConeGeometry(1.9,2.8,6);c2.translate(0,5.4,0);
   inst([tr,c1,c2],[mat(J?0x5a4030:0x7a5236),mat(0xffffff),mat(0xffffff)],J?520:240,J?8:7,J?120:200,()=>{const s=J?2.8+rnd()*1.8:.9+rnd()*1.1;
@@ -732,7 +837,7 @@ function startRace(i){lastRes=null;load(i);if(netOn()){const k=net.slot,gi=27-(k
  Object.assign(st,{top:0,bc:0,crash:0,cones:0,dit:0,laps:[]});for(const k in act)delete act[k];lap=1;best=null;lapStart=raceT=0;lastI=3;lapArmed=false;total=0;chain=0;bonusCoins=0;resetDamage();$('bt').textContent='--';$('lap').textContent='1';$('lt').textContent='0:00.00';$('sc').textContent=0;
  mode='count';cd=3.4;$('menu').style.display=$('end').style.display='none';document.body.classList.remove('m')}
 function showMenu(){mode='menu';cd=-1;coinBar();document.body.classList.add('m');$('end').style.display='none';$('menu').style.display='flex';
- $('cards').innerHTML=MAPS.map((m,i)=>`<button data-i="${i}" style="background:linear-gradient(#${hex(m.t)},#${hex(m.f)})"><b>${m.n}</b><small>${rec[i]?'Best '+fmt(rec[i]):'3 laps'}</small></button>`).join('')+'<button data-i="arena" style="background:linear-gradient(#4d5fa8,#e0845a)"><b>Trick Park</b><small>Ramps, tricks &amp; drift</small></button>'}
+ $('cards').innerHTML=MAPS.map((m,i)=>m.x&&!XMAS_ON()?'':`<button data-i="${i}" style="background:linear-gradient(#${hex(m.t)},#${hex(m.f)})${m.x?';box-shadow:0 0 0 3px #c8102e,0 6px 20px rgba(0,0,0,.4)':''}"><b>${m.n}</b><small>${rec[i]?'Best '+fmt(rec[i]):'3 laps'}</small></button>`).join('')+'<button data-i="arena" style="background:linear-gradient(#4d5fa8,#e0845a)"><b>Trick Park</b><small>Ramps, tricks &amp; drift</small></button>'}
 function finish(){mode='done';total+=Math.round(chain);chain=0;const T=raceT,r=rec[cur],nr=!r||T<r;
  if(netOn()){net.fin[net.id]=T;nsend({t:'fin',time:T})}else if(T>=15)applyResult(1,1)
  if(nr){rec[cur]=T;try{localStorage.dr=JSON.stringify(rec)}catch(e){}}
@@ -1093,7 +1198,7 @@ function hideVote(){net.voteEnd=0;$('vote').style.display='none'}
 function voteCounts(v){document.querySelectorAll('#vote .vn').forEach((e,i)=>e.textContent=(v&&v[i])||0)}
 function showVote(maps,left,votes){
  net.maps=maps;net.myVote=-1;net.voteEnd=performance.now()+left;$('end').style.display='none';
- $('vote').innerHTML=`<h1>Pick the track</h1><p id="vsec"></p><div class="vs">${maps.map((mi,i)=>`<button data-i="${i}" style="background:linear-gradient(#${hex(MAPS[mi].t)},#${hex(MAPS[mi].f)})"><span class="vn">0</span><b>${MAPS[mi].n}</b><small>${i+1} &middot; 3 laps</small></button>`).join('')}</div><p>Most votes wins &middot; a tie is decided by chance</p>`;
+ $('vote').innerHTML=`<h1>Pick the track</h1><p id="vsec"></p><div class="vs">${maps.map((mi,i)=>!MAPS[mi]?'':`<button data-i="${i}" style="background:linear-gradient(#${hex(MAPS[mi].t)},#${hex(MAPS[mi].f)})${MAPS[mi].x?';box-shadow:0 0 0 3px #c8102e':''}"><span class="vn">0</span><b>${MAPS[mi].n}</b><small>${i+1} &middot; 3 laps</small></button>`).join('')}</div><p>Most votes wins &middot; a tie is decided by chance</p>`;
  $('vote').style.display='flex';voteCounts(votes);
 }
 function pickMap(i){if(!net.voteEnd||!net.maps||i<0||i>2)return;net.myVote=i;nsend({t:'pick',i});document.querySelectorAll('#vote button').forEach((b,k)=>b.classList.toggle('sel',k===i))}
@@ -1158,7 +1263,7 @@ function loop(){
   requestAnimationFrame(loop);
   let dt=Math.min(clock.getDelta(),.05);
   const gp=DEV.poll(touch);if(gp.reset){if(mode==='race')resetCar();else if(mode==='arena')resetCarArena()}if(gp.menu&&!ONLINE&&mode==='race')showMenu();
-  const sp=step(dt);netTick(dt);flameTick();
+  const sp=step(dt);netTick(dt);flameTick();AURU.value=performance.now()/1000;
   if(mode==='menu'){const a=performance.now()/4000,R=document.body.classList.contains('bg')?10:16;cam.position.set(S.x+Math.sin(a)*R,5.5+(S.cy-GY)+GY*.5,S.z+Math.cos(a)*R);cam.lookAt(S.x,1.5+S.y,S.z)}
   skyG.position.copy(cam.position);
   if(cd>-.6){cd-=dt;cdEl.textContent=cd>.4?Math.ceil(cd-.4):'GO!';cdEl.style.opacity=1;if(cd<=.4&&mode==='count')mode=ARENA?'arena':'race'}else cdEl.style.opacity=0;
@@ -1215,7 +1320,7 @@ if(/[?&]bg=1/.test(location.search)){document.body.classList.add('bg');renderer.
  document.body.style.background='#1a1216';const cv=renderer.domElement;cv.style.transition='opacity .5s';
  let bi=cur|0;bgView();
  // a new map every 7 seconds (with my car and wrap), fading out and in so the change is not a jump
- setInterval(()=>{cv.style.opacity=0;setTimeout(()=>{bi=(bi+1)%MAPS.length;load(bi);bgView();cv.style.opacity=1},520)},7000)}
+ setInterval(()=>{cv.style.opacity=0;setTimeout(()=>{do{bi=(bi+1)%MAPS.length}while(MAPS[bi].x&&!XMAS_ON());load(bi);bgView();cv.style.opacity=1},520)},7000)}
 addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;bgView()});
 </script>
 </body>

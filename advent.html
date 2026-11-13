@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Advent Calendar - Low Poly Drift</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="ui.css">
+<style>
+body{background:radial-gradient(ellipse at 50% -10%,#2c5a78 0,#10243a 55%,#0a1424 100%) fixed;padding-top:0;gap:14px;overflow-x:hidden}
+/* string of lights */
+.lights{position:relative;width:calc(100% + 24px);height:46px;margin:0 -12px;flex:none;pointer-events:none}
+.lights::before{content:"";position:absolute;left:0;right:0;top:8px;height:22px;border-bottom:3px solid #1a1a22;border-radius:0 0 50% 50%/0 0 100% 100%}
+.lights i{position:absolute;top:0;width:12px;height:18px;border-radius:50% 50% 55% 55%;background:var(--c);box-shadow:0 0 12px 3px var(--c);animation:tw 1.6s infinite alternate;animation-delay:var(--d)}
+.lights i::before{content:"";position:absolute;left:3px;top:-5px;width:6px;height:6px;background:#2a2a32;border-radius:1px}
+@keyframes tw{from{opacity:.45}to{opacity:1}}
+.top{max-width:980px}
+h1{font-size:clamp(30px,6vw,46px);color:#fff;text-shadow:0 0 18px rgba(255,216,74,.55),0 3px 8px rgba(0,0,0,.5);letter-spacing:.5px}
+h1 small{display:block;font-size:.4em;color:var(--gold);letter-spacing:4px;text-transform:uppercase;margin-top:2px}
+#sub{text-align:center;max-width:560px;line-height:1.45}
+.bar{width:min(560px,92vw);display:flex;flex-direction:column;gap:8px}
+.prog{height:12px;border-radius:7px;background:rgba(255,255,255,.14);overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.4)}
+.prog i{display:block;height:100%;width:0;background:repeating-linear-gradient(45deg,#e8283c 0 10px,#fff 10px 20px);border-radius:7px;transition:width .6s}
+.stats{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);gap:10px;flex-wrap:wrap}
+.stats b{color:#fff}
+#next{color:var(--gold)}
+#claimall{background:linear-gradient(#ffd84a,#f2a900);color:#2a1a00;box-shadow:0 0 22px rgba(255,216,74,.5);animation:glow 1.6s infinite alternate;display:none}
+@keyframes glow{to{box-shadow:0 0 34px rgba(255,216,74,.9);transform:scale(1.03)}}
+.cal{width:100%;max-width:820px;padding:16px;border-radius:22px;background:linear-gradient(#3a2418,#24150e);box-shadow:0 12px 40px rgba(0,0,0,.55),inset 0 0 0 4px #5a3a24,inset 0 0 0 7px #2a190f}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;perspective:1100px}
+@media (min-width:700px){.grid{grid-template-columns:repeat(6,1fr)}}
+.door{position:relative;aspect-ratio:4/5;padding:0;background:#0d0a12;border-radius:12px;color:#fff;font:inherit;text-align:center;box-shadow:inset 0 0 14px rgba(0,0,0,.8);-webkit-tap-highlight-color:transparent}
+.door:disabled{cursor:default;opacity:1}
+/* what is behind the door */
+.in{position:absolute;inset:0;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 4px;background:radial-gradient(circle at 50% 45%,#fff3b8 0,#ffc861 45%,#8a4a1c 100%);color:#3a1a00;font-weight:700;font-size:12px;line-height:1.15;overflow:hidden}
+.in .ic{font-size:30px;line-height:1;display:flex;align-items:center;justify-content:center;height:34px}
+.in .ic img{width:32px;height:32px}
+.in .sw{width:34px;height:34px;border-radius:9px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.in em{font-style:normal;font-size:11px;color:#6b3a10}
+.in .ok{position:absolute;right:5px;top:3px;font-size:13px;color:#1f7a4a}
+/* the door itself */
+.face{position:absolute;inset:0;border-radius:12px;transform-origin:left center;transition:transform .8s cubic-bezier(.3,1.3,.5,1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:clamp(24px,5vw,34px);font-weight:700;font-family:Georgia,"Times New Roman",serif;text-shadow:0 2px 4px rgba(0,0,0,.5);
+ background:linear-gradient(150deg,var(--a),var(--b));border:2px solid rgba(255,255,255,.28);box-shadow:inset 0 0 0 5px rgba(0,0,0,.14),inset 0 0 0 7px rgba(255,255,255,.2),0 4px 10px rgba(0,0,0,.4);backface-visibility:hidden}
+.face::before{content:"";position:absolute;left:12%;right:12%;top:10%;height:38%;border-radius:40% 40% 8% 8%/60% 60% 8% 8%;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06)}
+.face::after{content:"";position:absolute;right:9px;top:55%;width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff6c0,#d9a520);box-shadow:0 1px 3px rgba(0,0,0,.6)}
+.face span{position:relative;z-index:1}
+.face small{position:relative;z-index:1;font:700 clamp(9px,1.7vw,11px) "Century Gothic",Futura,sans-serif;color:#fff6c8;text-shadow:0 1px 3px rgba(0,0,0,.6);padding:0 3px}
+.c0{--a:#d6203a;--b:#8b0f1a}.c1{--a:#25935a;--b:#0f4a2c}.c2{--a:#2d63b8;--b:#102c5e}
+.big .face{--a:#f2c53a;--b:#9a6a08;color:#3a2400;text-shadow:0 1px 2px rgba(255,255,255,.5)}
+.big .face small{color:#4a2e00;text-shadow:none}
+.big .face::before{border-color:rgba(255,255,255,.5)}
+.star{position:absolute;right:5px;top:3px;font-size:15px;z-index:2;color:#fff;text-shadow:0 0 6px #fff}
+.lock .face{filter:saturate(.25) brightness(.55)}
+.lock .face small{font-size:10px}
+.avail .face{animation:bob 1.4s infinite ease-in-out;box-shadow:0 0 0 3px var(--gold),0 0 20px 4px rgba(255,216,74,.55),inset 0 0 0 5px rgba(0,0,0,.14),inset 0 0 0 7px rgba(255,255,255,.2)}
+.avail.nxt .face{box-shadow:0 0 0 3px #fff,0 0 26px 6px rgba(255,255,255,.7),inset 0 0 0 5px rgba(0,0,0,.14),inset 0 0 0 7px rgba(255,255,255,.2)}
+@keyframes bob{50%{transform:translateY(-3px) scale(1.03)}}
+.open .face{transform:rotateY(-118deg);animation:none;pointer-events:none}
+.open{cursor:default}
+/* popup */
+#pop{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(5,10,20,.72);padding:16px}
+#pop.on{display:flex}
+.card{position:relative;background:linear-gradient(#2a1a2e,#17101e);border:2px solid var(--gold);border-radius:22px;padding:22px 22px 20px;width:min(460px,94vw);max-height:88vh;overflow:auto;text-align:center;box-shadow:0 0 50px rgba(255,216,74,.35);animation:pp .5s cubic-bezier(.3,1.5,.5,1)}
+@keyframes pp{from{transform:scale(.6);opacity:0}}
+.card h2{color:var(--gold);font-size:26px;margin-bottom:12px}
+.rw{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.08);border-radius:14px;padding:10px 14px;margin:8px 0;text-align:left;font-size:16px}
+.rw .ic{font-size:34px;width:44px;text-align:center;flex:none}.rw .ic img{width:40px;height:40px;vertical-align:middle}
+.rw .sw{width:44px;height:44px;border-radius:11px;border:2px solid #fff;flex:none}
+.rw b{display:block;color:#fff}.rw small{color:var(--muted);font-size:13px}
+.rw.sm{padding:6px 12px;margin:4px 0;font-size:15px}.rw.sm .ic{font-size:26px}.rw.sm .ic img{width:30px;height:30px}.rw.sm .sw{width:34px;height:34px}
+.rw.n{animation:pp .5s both;animation-delay:var(--d)}
+.card .btn{margin-top:12px;padding:12px 30px;font-size:19px}
+.tot{font-size:18px;color:var(--gold);font-weight:700;margin-top:6px}
+#fx{position:fixed;inset:0;z-index:21;pointer-events:none}
+.snow{position:fixed;inset:0;pointer-events:none;z-index:-1}
+</style>
+</head>
+<body>
+<div class="lights" id="lights"></div>
+<div class="top"><button class="btn ghost" id="back">&larr; Menu</button><div class="panel coins" id="coins"></div></div>
+<h1>Advent Calendar<small>Christmas 2026</small></h1>
+<p id="sub"></p>
+<div class="bar">
+ <div class="prog"><i id="pg"></i></div>
+ <div class="stats"><span><b id="cnt">0</b>/24 doors opened</span><span id="next"></span></div>
+</div>
+<button class="btn" id="claimall"></button>
+<div class="cal"><div class="grid" id="grid"></div></div>
+<div id="pop"><div class="card" id="card"></div></div>
+<canvas id="fx"></canvas>
+<canvas class="snow" id="snow"></canvas>
+<script src="config.js"></script>
+<script src="device.js"></script>
+<script src="cars.js"></script>
+<script>
+const YEAR=2026, KEY='dn_advent'+YEAR, LOGKEY=KEY+'_log';
+// ---- REWARDS (edit here). Every day gives coins; c = coins, box = a free Christmas Box roll, w = a guaranteed wrap of that rarity, car = a car (by name).
+// Everything is given when a door is opened. Missed doors can be opened any time until 3 January.
+const DAYS=[
+ {c:50},{c:50},{c:75,box:1},{c:75},{c:100},{c:150,w:'rare'},
+ {c:75},{c:75},{c:100,box:1},{c:100},{c:125},{c:200,w:'epic',car:'Snow Plow'},
+ {c:100},{c:100},{c:125,box:1},{c:125},{c:150},{c:250,w:'epic'},
+ {c:150},{c:150},{c:175,box:1},{c:175},{c:200},{c:500,w:'legendary',car:'Santa Sleigh'}];
+const $=id=>document.getElementById(id);
+let claimed=[],log={};
+try{claimed=JSON.parse(localStorage[KEY]||'[]')}catch(e){}
+try{log=JSON.parse(localStorage[LOGKEY]||'{}')}catch(e){}
+let today=0,offset=0; // today = number of doors open (0 = not December yet, 24 = all); offset = server time - device time
+const isBig=d=>!!(d.w||d.car);
+const EM={coin:coinImg};
+
+// date from OUR server (Date header), so changing the phone clock does not unlock doors; falls back to the device clock
+async function nowDate(){
+ try{const r=await fetch(location.pathname,{method:'HEAD',cache:'no-store'});const h=r.headers.get('date');if(h){const d=new Date(h);if(!isNaN(d)){offset=d-Date.now();return d}}}catch(e){}
+ return new Date()}
+function romeParts(d){const p=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Rome',year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric',hour12:false}).formatToParts(d);
+ const g=t=>+p.find(x=>x.type===t).value;return{y:g('year'),m:g('month'),d:g('day'),h:g('hour')%24,mi:g('minute'),s:g('second')}}
+
+// ---- granting rewards ----
+const XBOX=BOXES.find(b=>b.id==='xmas');
+const wrapTxt=w=>RAR[w.r].n+' wrap "'+w.n+'"';
+function giveWrap(rar){
+ const pool=WRAPS.filter(w=>w.x&&w.r===rar&&!prog.wraps.includes(w.id));
+ if(pool.length){const w=pool[Math.floor(Math.random()*pool.length)];prog.wraps.push(w.id);return{k:'wrap',id:w.id,t:wrapTxt(w)}}
+ prog.coins+=300;return{k:'coins',n:300,t:'300 coins (you already own every '+RAR[rar].n+' Christmas wrap)'}}
+function grant(n){
+ const d=DAYS[n-1],res={n,c:d.c,it:[]};prog.coins+=d.c;
+ if(d.box){const w=rollBox(XBOX);
+  if(prog.wraps.includes(w.id)){prog.coins+=150;res.it.push({k:'coins',n:150,t:'150 coins (the box wrap '+w.n+' was a duplicate)'})}
+  else{prog.wraps.push(w.id);res.it.push({k:'wrap',id:w.id,t:wrapTxt(w),box:1})}}
+ if(d.w)res.it.push(giveWrap(d.w));
+ if(d.car){const i=RANKS.findIndex(r=>r.n===d.car);
+  if(i>=0&&!prog.owned.includes(i)){prog.owned.push(i);res.it.push({k:'car',n:d.car,t:'New car: '+d.car+'!'})}
+  else if(i>=0){const b=Math.round(RANKS[i].price/2);prog.coins+=b;res.it.push({k:'coins',n:b,t:b+' coins (you already own the '+d.car+')'})}}
+ claimed.push(n);log[n]=res;
+ return res}
+function persist(){try{localStorage[KEY]=JSON.stringify(claimed);localStorage[LOGKEY]=JSON.stringify(log)}catch(e){}saveProg()}
+const avail=()=>[...Array(24).keys()].map(i=>i+1).filter(n=>n<=today&&!claimed.includes(n));
+
+// ---- drawing ----
+function iconFor(it){
+ if(it.k==='wrap'){const w=WRAP_BY[it.id];return w?`<div class="sw" style="background:${wrapCSS(w)}"></div>`:'<div class="ic">&#127912;</div>'}
+ if(it.k==='car')return'<div class="ic">&#128663;</div>';
+ return'<div class="ic">'+coinImg+'</div>'}
+function inside(n){ // what the opened door shows
+ const r=log[n],d=DAYS[n-1];let h='';
+ if(r){h+=`<div class="ic">${coinImg}</div><span>+${r.c} coins</span>`;
+  r.it.forEach(it=>{h+=it.k==='wrap'?`<div class="sw" style="background:${wrapCSS(WRAP_BY[it.id]||{c:[0xffffff],p:0})}"></div><em>${(WRAP_BY[it.id]||{}).n||'Wrap'}</em>`:it.k==='car'?`<div class="ic">&#128663;</div><em>${it.n}</em>`:`<em>+${it.n} coins</em>`})}
+ else h=`<div class="ic">${coinImg}</div><span>+${d.c} coins</span>`+(d.w?`<em>+ ${RAR[d.w].n} wrap</em>`:'')+(d.car?`<em>+ ${d.car}</em>`:'')+(d.box?'<em>+ free box</em>':'');
+ return h+'<div class="ok">&#10003;</div>'}
+function hint(n){const d=DAYS[n-1];return isBig(d)?(d.car?'Car + wrap':RAR[d.w].n+' wrap'):d.box?'Coins + box':d.c+' coins'}
+function render(){
+ $('coins').innerHTML=coinImg+'<b>'+prog.coins+'</b><span>coins</span>';
+ const av=avail(),nx=av[0];
+ $('grid').innerHTML='';
+ for(let n=1;n<=24;n++){
+  const d=DAYS[n-1],b=document.createElement('button');
+  b.className='door c'+((n-1)%3)+(isBig(d)?' big':'');b.setAttribute('aria-label','Door '+n);
+  let face=`<div class="face">${isBig(d)?'<div class="star">&#9733;</div>':''}<span>${n}</span>`;
+  if(claimed.includes(n)){b.classList.add('open');b.disabled=true;face+='</div>'}
+  else if(n<=today){b.classList.add('avail');if(n===nx)b.classList.add('nxt');face+=`<small>${hint(n)}</small></div>`;b.onclick=()=>openDoor(n,b)}
+  else{b.classList.add('lock');b.disabled=true;face+=`<small>&#128274; Dec ${n}</small></div>`}
+  b.innerHTML=`<div class="in">${claimed.includes(n)?inside(n):''}</div>`+face;
+  $('grid').appendChild(b)}
+ const k=claimed.length;$('cnt').textContent=k;$('pg').style.width=(k/24*100)+'%';
+ const ca=$('claimall');if(av.length>1){ca.style.display='block';ca.textContent='Open all '+av.length+' available doors'}else ca.style.display='none';
+ $('sub').textContent=today?(av.length?'You have '+av.length+' door'+(av.length>1?'s':'')+' to open. Missed some? Every door stays open for you until 3 January!':'All available doors are open. Come back tomorrow!'):'The calendar opens on 1 December. Come back then!'}
+
+// ---- popup + confetti ----
+function pop(title,res){
+ const rows=[];
+ res.forEach(r=>{rows.push(`<div class="rw n${res.length>1?' sm':''}" style="--d:${Math.min(rows.length*.12,1.5)}s"><div class="ic">${coinImg}</div><div><b>+${r.c} coins</b>${res.length>1?'<small>Day '+r.n+'</small>':''}</div></div>`);
+  r.it.forEach(it=>rows.push(`<div class="rw n${res.length>1?' sm':''}" style="--d:${Math.min(rows.length*.12,1.5)}s">${iconFor(it)}<div><b>${it.t}</b>${res.length>1?'<small>Day '+r.n+'</small>':it.box?'<small>from your free Christmas Box</small>':''}</div></div>`))});
+ const tot=res.reduce((a,r)=>a+r.c+r.it.filter(i=>i.k==='coins').reduce((x,i)=>x+i.n,0),0);
+ $('card').innerHTML=`<h2>${title}</h2>${rows.join('')}<div class="tot">${coinImg.replace('<img','<img style="width:24px;height:24px;vertical-align:middle"')} ${tot} coins in total</div><button class="btn" id="okb">Great!</button>`;
+ $('pop').classList.add('on');$('okb').onclick=()=>$('pop').classList.remove('on');confetti()}
+$('pop').onclick=e=>{if(e.target.id==='pop')$('pop').classList.remove('on')};
+function openDoor(n,el){
+ if(claimed.includes(n)||n>today)return;
+ const r=grant(n);persist();
+ el.classList.remove('avail','nxt');el.querySelector('.in').innerHTML=inside(n);el.classList.add('open');el.disabled=true;
+ $('coins').innerHTML=coinImg+'<b>'+prog.coins+'</b><span>coins</span>';
+ setTimeout(()=>{pop('Door '+n+' is open!',[r]);render()},650)}
+$('claimall').onclick=()=>{
+ const av=avail();if(!av.length)return;
+ const res=av.map(grant);persist();
+ document.querySelectorAll('.door.avail').forEach(b=>b.classList.add('open'));
+ setTimeout(()=>{pop(res.length+' doors opened!',res);render()},500)};
+function confetti(){
+ const c=$('fx'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
+ const cols=['#e8283c','#ffd84a','#2fa86a','#5aa7ff','#ffffff','#ff6ad5'];
+ const p=[...Array(130)].map(()=>({x:innerWidth/2+(Math.random()-.5)*160,y:innerHeight*.45,vx:(Math.random()-.5)*14,vy:-Math.random()*15-4,w:5+Math.random()*7,h:3+Math.random()*5,r:Math.random()*6,vr:(Math.random()-.5)*.4,c:cols[Math.random()*cols.length|0]}));
+ let t=0;(function f(){x.clearRect(0,0,c.width,c.height);p.forEach(q=>{q.vy+=.35;q.x+=q.vx;q.y+=q.vy;q.vx*=.99;q.r+=q.vr;x.save();x.translate(q.x,q.y);x.rotate(q.r);x.fillStyle=q.c;x.fillRect(-q.w/2,-q.h/2,q.w,q.h);x.restore()});
+  if(++t<150)requestAnimationFrame(f);else x.clearRect(0,0,c.width,c.height)})()}
+
+// ---- which doors are open today ----
+let tick=null;
+function countdown(){
+ clearTimeout(tick);const el=$('next');
+ const p=romeParts(new Date(Date.now()+offset));
+ if(!(p.y===YEAR&&p.m===12&&p.d<24)||new URLSearchParams(location.search).get('test')){el.textContent=today&&today<24?'':'';return}
+ const left=86400-(p.h*3600+p.mi*60+p.s),pd=n=>String(n).padStart(2,'0');
+ el.textContent='Door '+(p.d+1)+' opens in '+pd(left/3600|0)+':'+pd(left%3600/60|0)+':'+pd(left%60);
+ if(left<=1){setTimeout(()=>location.reload(),1500);return}
+ tick=setTimeout(countdown,1000)}
+(async()=>{
+ const t=BETA==='christmas'?new URLSearchParams(location.search).get('test'):null; // advent.html?test=12 works only in beta test mode
+ const p=romeParts(await nowDate());
+ if(t)today=Math.min(24,Math.max(0,+t||0));
+ else if(p.y===YEAR&&p.m===12)today=Math.min(p.d,24);
+ else if(p.y===YEAR+1&&p.m===1&&p.d<=3)today=24;
+ else today=BETA==='christmas'?24:0;
+ render();countdown()})();
+$('back').onclick=()=>go('index.html');
+// string of lights across the top
+(()=>{const L=$('lights'),cs=['#ff3b3b','#ffd84a','#4aa8ff','#4aff8a','#ff6ad5'],n=Math.ceil(innerWidth/38);
+ for(let i=0;i<n;i++){const e=document.createElement('i'),u=i/(n-1),y=Math.sin(u*Math.PI*(n/6))*0;e.style.cssText=`left:${u*96+1}%;top:${10+Math.abs(Math.sin(i*1.7))*9}px;--c:${cs[i%5]};--d:${(i*.23)%1.6}s`;L.appendChild(e)}})();
+// snow (two layers: small + far, big + near)
+(()=>{const c=$('snow'),x=c.getContext('2d');let w,h;const f=[...Array(110)].map(()=>({x:Math.random(),y:Math.random(),r:.8+Math.random()*3,s:.0004+Math.random()*.0018,d:Math.random()*6}));
+ const rs=()=>{w=c.width=innerWidth;h=c.height=innerHeight};rs();addEventListener('resize',rs);
+ (function t(n){x.clearRect(0,0,w,h);f.forEach(s=>{s.y+=s.s*16;if(s.y>1)s.y=0;const px=(s.x+Math.sin(n/1400+s.d)*.015)*w;x.fillStyle='rgba(255,255,255,'+(.35+s.r/5)+')';x.beginPath();x.arc(px,s.y*h,s.r,0,7);x.fill()});requestAnimationFrame(t)})(0)})();
+</script>
+</body>
+</html>

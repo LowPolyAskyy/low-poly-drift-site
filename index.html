@@ -3,7 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Low Poly Drift</title>
+<title>Low Poly Drift - Free Low Poly Drifting Game</title>
+<meta name="description" content="Low Poly Drift is a free low poly drifting game. Race online with friends, earn coins, unlock new cars and climb the ranks.">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Low Poly Drift - Free Low Poly Drifting Game">
+<meta property="og:description" content="Race online with friends, earn coins, unlock new cars and climb the ranks.">
+<meta property="og:image" content="logo.png">
+<!-- INCOLLA QUI il tag google-site-verification di Search Console -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#1a1216">
 <meta name="mobile-web-app-capable" content="yes">
@@ -20,7 +27,7 @@ body{justify-content:center}
 </style>
 </head>
 <body>
-<iframe id="bgmap" src="game.html?bg=1" tabindex="-1" aria-hidden="true"></iframe><div id="bgdim"></div>
+<iframe id="bgmap" data-src="game.html?bg=1" tabindex="-1" aria-hidden="true"></iframe><div id="bgdim"></div>
 <h1><img class="logo" src="logo.png" alt="Low Poly Drift"></h1>
 <div class="panel coins" id="coins"></div>
 <div id="rankbar"></div>
@@ -28,6 +35,7 @@ body{justify-content:center}
   <button class="btn big" id="play">Play</button>
   <button class="btn big" id="shop">Shop</button>
   <button class="btn big" id="settings">Settings</button>
+  <button class="btn big" id="advent" style="display:none;background:#c8102e;color:#fff">Advent Calendar</button>
   <button class="btn ghost" id="dl" style="display:none">Download the app</button>
 </div>
 <script src="config.js"></script>
@@ -36,6 +44,9 @@ body{justify-content:center}
 <script>
 document.getElementById('coins').innerHTML=coinImg+'<b>'+prog.coins+'</b><span>coins</span><span style="color:var(--muted)">&middot; '+RANKS[prog.car].v+'</span>';
 document.getElementById('rankbar').innerHTML=rankBarHTML(prog.elo);
+// Christmas event: Advent button visible 1 Dec - 3 Jan (Italy time), or with ?betatest=christmas
+if(XMAS_ON()){const a=document.getElementById('advent');a.style.display='';a.onclick=()=>go('advent.html')}
+if(BETA){const t=document.createElement('div');t.textContent='BETA TEST: '+BETA;t.style.cssText='position:fixed;top:8px;left:8px;background:#c8102e;color:#fff;font:700 12px sans-serif;padding:4px 10px;border-radius:8px;z-index:9';t.onclick=()=>{location.href='index.html?betatest=off'};document.body.appendChild(t)}
 document.getElementById('play').onclick=()=>go('lobby.html');
 document.getElementById('shop').onclick=()=>go('shop.html');
 document.getElementById('settings').onclick=()=>go('settings.html');

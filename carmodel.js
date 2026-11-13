@@ -374,6 +374,77 @@ if(K=='fiat'){ // round retro city car
   box(1.7,.07,.5,bodyM,0,1.52,-1.9);box(.1,.6,.1,darkM,0,1.2,-1.9);
   box(.5,.06,.05,glow(0xff3a30),0,.9,-1.82);
   wp=[[-1,1.6,1],[1,1.6,1],[-1,-1.45,1.15],[1,-1.45,1.15]];ws=1;wx=1.22;tw=1.45;
+}else if(K=='sleigh'){ // Santa's sleigh: curled tub, gold trim, shafts with bells, gift sack (wheels hidden, it rides on runners)
+  const gold=mat(0xffc83a),brown=mat(0x5a3820),sackM=mat(0x8a5a2b),cush=mat(0x7a0f1c),white=mat(0xffffff),
+        green=mat(0x1f8a45),blue=mat(0x2a63c8),purple=mat(0x8a3fd0),redG=mat(0xd81e2b),wood=mat(0x7a4a26);
+  // tub with raised back and a big curled front
+  sh([[-2.0,.62],[-2.3,1.5],[-2.1,1.9],[-1.6,1.75],[-1.2,1.2],[-.7,.98],[1.0,.92],[1.55,1.25],[2.0,1.7],[2.35,1.95],[2.5,1.75],[2.3,1.35],[2.0,.7]],1.6,bodyM);
+  // gold rails + scroll ends
+  [-1,1].forEach(s=>{
+    box(.1,.14,3.5,gold,s*.82,1.03,-.1);
+    sph(.2,gold,s*.82,1.98,2.35);sph(.17,gold,s*.82,1.95,-2.15);
+    // runners: long ski with curled front tip and small rear lift
+    box(.14,.14,4.6,chrome,s*.8,.1,-.1);
+    box(.14,.14,.95,chrome,s*.8,.38,2.5,-.62);
+    box(.14,.14,.6,chrome,s*.8,.28,-2.55,.5);
+    box(.12,.55,.12,chrome,s*.8,.4,1.3);box(.12,.55,.12,chrome,s*.8,.4,-1.3);
+    // shafts that the reindeer would pull, with bells
+    box(.1,.1,2.2,wood,s*.45,1.25,3.1,.08);
+    sph(.13,gold,s*.45,1.2,4.15);
+  });
+  box(1.65,.1,.1,chrome,0,.22,1.3);box(1.65,.1,.1,chrome,0,.22,-1.3);
+  // seat cushion + backrest
+  box(1.35,.28,1.0,cush,0,1.1,-.35);box(1.35,.7,.22,cush,0,1.5,-.95);
+  // sack of toys and gifts on the rear deck
+  const sk=sph(.55,sackM,0,1.55,-1.6);sk.scale.set(1.1,.9,.9);sph(.2,sackM,0,2.05,-1.6);box(.5,.07,.5,redG,0,1.95,-1.6);
+  box(.5,.5,.5,green,.7,1.25,-.4);box(.52,.08,.12,gold,.7,1.5,-.4);box(.12,.52,.52,gold,.7,1.25,-.4);
+  box(.45,.4,.45,blue,-.72,1.22,-.2);box(.47,.08,.12,white,-.72,1.43,-.2);box(.12,.42,.47,white,-.72,1.22,-.2);
+  box(.4,.4,.4,purple,.55,1.2,-1.0);box(.42,.08,.1,gold,.55,1.41,-1.0);
+  // front lanterns + tail light
+  roundLights(1.9,2.0,.62,.15,0xffe9a0);
+  box(1.0,.12,.06,glow(0xff3a30),0,1.2,-2.28);
+  wp=[[-1,1.3],[1,1.3],[-1,-1.3],[1,-1.3]];ws=.7;
+}else if(K=='plow'){ // snow-plow truck: pickup + hydraulic plow blade, salt hopper, amber light bar
+  pickup();
+  const wht=mat(0xf2f2f6),red=mat(0xc8102e),steel=mat(0x59616e);
+  // plow blade: moldboard with curved top, hazard stripes, frame and hydraulic rams
+  box(2.8,.9,.2,wht,0,.78,3.15,-.18);box(2.8,.16,.34,wht,0,1.3,3.12);
+  for(let i=0;i<7;i++)box(.4,.17,.36,i%2?wht:red,-1.2+i*.4,1.3,3.13);
+  box(2.8,.1,.3,steel,0,.34,3.2);
+  [-1,1].forEach(s=>{box(.1,1.0,.1,mat(0xf2a900),s*1.4,1.2,3.1);box(.14,.14,.14,glow(0xff3a30),s*1.4,1.75,3.1);
+    box(.1,.1,1.0,steel,s*.8,.66,2.7,.1);cyl(.06,.06,.9,chrome,s*.45,1.0,2.7,'z')});
+  box(1.3,.1,.1,steel,0,.7,2.55);
+  // salt hopper in the bed + light bar on the cab
+  box(1.55,.62,1.35,mat(0xd9d4c8),0,1.48,-1.75);box(1.5,.08,1.3,wht,0,1.82,-1.75);
+  box(1.1,.2,.5,steel,0,1.1,-2.55);
+  box(1.5,.14,.4,black,0,1.9,.3);[-.55,-.18,.18,.55].forEach(x=>box(.28,.14,.34,glow(0xffa000),x,2.02,.3));
+  // reflective side stripes, bull bar, fog lights
+  [-1,1].forEach(s=>{box(.04,.12,3.4,red,s*1.02,.95,-.1);box(.04,.1,3.4,wht,s*1.02,1.1,-.1)});
+  box(1.5,.1,.1,steel,0,.6,2.55);roundLights(.85,2.46,.8,.12,0xffffff);
+  wp=[[-1,1.5],[1,1.5],[-1,-1.5],[1,-1.5]];ws=1.25;wx=1.04;
+}else if(K=='candy'){ // rally sedan with candy-cane stripes, roof rack, fog lights and a candy cane antenna
+  sedan();
+  const wh=mat(0xffffff),rd=mat(0xe8203c);
+  // racing stripes over hood, roof and boot
+  [-1,1].forEach(s=>{
+    const hs=sh([[1.2,1.06],[1.4,1.075],[2.0,.875],[2.0,.84],[1.4,1.03],[1.2,1.01]],.3,rd);hs.position.x=s*.3;
+    box(.3,.03,1.9,rd,s*.3,1.63,-.25);
+    box(.3,.03,.55,rd,s*.3,1.02,-1.72);
+  });
+  // alternating stripes down both sides
+  [-1,1].forEach(s=>{for(let i=0;i<9;i++)box(.04,.14,.38,i%2?wh:rd,s*.94,.62,-1.5+i*.38)});
+  // door roundels
+  [-1,1].forEach(s=>{cyl(.3,.3,.04,wh,s*.93,.98,-.1,'x');cyl(.2,.2,.05,rd,s*.93,.98,-.1,'x')});
+  // roof rack + rally lights
+  [-1,1].forEach(s=>box(.06,.06,1.3,black,s*.55,1.68,-.1));box(1.2,.06,.06,black,0,1.68,.4);box(1.2,.06,.06,black,0,1.68,-.6);
+  [-.45,-.15,.15,.45].forEach(x=>cyl(.1,.1,.1,glow(0xfff2b0),x,1.75,.42,'z'));
+  // front lip, fog lights, tail spoiler
+  box(1.9,.08,.4,black,0,.36,2.1);[-.5,.5].forEach(x=>cyl(.1,.1,.08,glow(0xfff2b0),x,.62,2.04,'z'));
+  box(1.8,.08,.45,rd,0,1.25,-2.0);[-1,1].forEach(s=>box(.08,.35,.35,wh,s*.8,1.06,-2.0));
+  // candy cane antenna
+  for(let i=0;i<6;i++)cyl(.05,.05,.2,i%2?wh:rd,.7,1.15+i*.2,-1.85);
+  const hook=new THREE.Mesh(new THREE.TorusGeometry(.17,.05,6,10,Math.PI),rd);hook.position.set(.53,2.35,-1.85);host.add(hook);
+  wp=[[-1,1.3],[1,1.3],[-1,-1.3],[1,-1.3]];ws=1;
 }else if(K=='neon'){
   const ac=R.ac;
   sh([[-2.2,.5],[-2.2,.85],[-.8,1.0],[.5,.95],[2.2,.65],[2.2,.5]],2.0,bodyM);
@@ -394,7 +465,7 @@ wp.forEach(([sx,z,sc=1],i)=>{
   spin.add(t,r);for(let k=0;k<5;k++){const sp=new THREE.Mesh(new THREE.BoxGeometry(.47*tw,.52*w,.07*w),spkM);sp.rotation.x=k*Math.PI/5;spin.add(sp)}
   const cap=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.5*tw,6),spkM);cap.rotation.z=Math.PI/2;spin.add(cap);pivot.add(spin);pivot.position.set(sx*wx,.46*w,z);tilt.add(pivot);wheels.push({pivot,spin,front:i<2});
 });
-if(K=='neon')wheels.forEach(w=>{w.pivot.visible=false});
+if(K=='neon'||K=='sleigh')wheels.forEach(w=>{w.pivot.visible=false});
 tilt.scale.set(R.sx,R.sy,R.sz);
 applyWrap(root,tilt,bodyM,wrapId);
 return{root,tilt,piv,wheels,bodyM}}

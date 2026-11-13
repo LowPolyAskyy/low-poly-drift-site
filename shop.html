@@ -76,6 +76,7 @@ body{justify-content:flex-start}
 .wt:hover{background:rgba(0,0,0,.45)}.wt.on{border-color:var(--accent);background:rgba(255,138,76,.14)}
 .wt .sp{height:46px;border-radius:8px;box-shadow:inset 0 -9px 12px rgba(0,0,0,.28);position:relative}
 .wt b{font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wt small{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.wt.xm{border-color:#c8102e}.wt.xm.on{border-color:#ff4b4b;background:rgba(200,16,46,.22)}.row.xm{border-color:#c8102e}.row.xm.on{border-color:#ff4b4b;background:rgba(200,16,46,.2)}
 .wt.no{opacity:.4}.wt.no .sp::after{content:"?";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;text-shadow:0 2px 6px #000}
 .wname{display:flex;align-items:center;gap:10px;font-size:18px;flex-wrap:wrap}.wname .sp{width:34px;height:34px;border-radius:9px;box-shadow:inset 0 -7px 10px rgba(0,0,0,.28)}
 #ov{position:fixed;inset:0;z-index:10;background:rgba(10,8,14,.82);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px}
@@ -101,7 +102,7 @@ body{justify-content:flex-start}
 </style>
 </head>
 <body>
-<iframe id="bgmap" src="game.html?bg=1" tabindex="-1" aria-hidden="true"></iframe><div id="bgdim"></div>
+<iframe id="bgmap" data-src="game.html?bg=1" tabindex="-1" aria-hidden="true"></iframe><div id="bgdim"></div>
 <div class="top"><button class="btn ghost" id="back">&larr; Menu</button><h2>Garage</h2><div class="coins" id="coins"></div></div>
 <div class="modes" id="modes"><button class="mtab on" data-m="cars">Cars</button><button class="mtab" data-m="wraps">Wraps &amp; Boxes</button></div>
 <div class="garage">
@@ -188,7 +189,7 @@ vw.addEventListener('pointermove',e=>{if(drag)yaw=drag.y0+(e.clientX-drag.x)*.01
 
 // ---------- garage UI ----------
 const status=i=>prog.car===i?'eq':prog.owned.includes(i)?'own':'lock';
-const order=()=>RANKS.map((_,i)=>i).sort((a,b)=>PRICES[a]-PRICES[b]||a-b).filter(i=>mode==='wraps'?prog.owned.includes(i):(filter==='all'||(filter==='owned'?prog.owned.includes(i):!prog.owned.includes(i))));
+const order=()=>RANKS.map((_,i)=>i).sort((a,b)=>PRICES[a]-PRICES[b]||a-b).filter(i=>!RANKS[i].x||XMAS_ON()||prog.owned.includes(i)).filter(i=>mode==='wraps'?prog.owned.includes(i):(filter==='all'||(filter==='owned'?prog.owned.includes(i):!prog.owned.includes(i))));
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1800)}
 function select(i,noScroll){
  sel=i;pvw=undefined;showCar(i);draw(noScroll);
@@ -206,7 +207,7 @@ function draw(noScroll){
  else{const can=prog.coins>=price;$('buy').innerHTML=`<div class="price">${coinImg}${price}</div><button class="btn" id="act" ${can?'':'disabled'}>${can?'Buy':'Need '+(price-prog.coins)+' more'}</button>`}
  const o=order();
  $('rows').innerHTML=o.length?o.map(i=>{const s=status(i);
-  return `<button class="row${i===sel?' on':''}" data-i="${i}"><span class="sw" style="background:#${hex(RANKS[i].c)}"></span><span class="nm"><b>${RANKS[i].v}</b><small>${RANKS[i].cat||RANKS[i].k}</small></span>`+
+  return `<button class="row${i===sel?' on':''}${RANKS[i].x?' xm':''}" data-i="${i}"><span class="sw" style="background:#${hex(RANKS[i].c)}"></span><span class="nm"><b>${RANKS[i].v}</b><small>${RANKS[i].cat||RANKS[i].k}</small></span>`+
   (s==='eq'?'<span class="st g">&#10003; Equipped</span>':s==='own'?'<span class="st m">Owned</span>':`<span class="st c">${coinImg}${PRICES[i]}</span>`)+`</button>`}).join(''):'<div class="empty">Nothing here yet</div>';
  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.f===filter));
  if(!noScroll){const r=document.querySelector('.row.on');if(r&&r.scrollIntoView)r.scrollIntoView({block:'nearest',inline:'nearest'})}
@@ -217,14 +218,15 @@ function drawWraps(){
  const ew=prog.weq[sel]||'',shown=pvw!==undefined?pvw:ew,W0=shown?WRAP_BY[shown]:null;
  $('buy').innerHTML=`<div class="wname">${W0?`<span class="sp" style="${sp(W0)}"></span><b>${W0.n}</b><span class="chip" style="background:${RAR[W0.r].c};color:#111">${RAR[W0.r].n}</span>`:'<b>Factory paint</b>'}</div>`+
   (shown!==ew?'<button class="btn" id="act">Equip wrap</button>':shown?'<button class="btn ghost" id="act">Remove wrap</button>':'<button class="btn" disabled>Pick a wrap &rarr;</button>');
- $('boxes').innerHTML=BOXES.map(b=>{const can=prog.coins>=b.price;
+ $('boxes').innerHTML=BOXES_ON().map(b=>{const can=prog.coins>=b.price;
   return `<button class="bx" data-b="${b.id}" style="--bc:${b.ui}" ${can&&!busy?'':'disabled'}><span class="ic">?</span><span class="nm"><b>${b.n}</b><small>${RAR_ORDER.filter(k=>b.odds[k]>0).map(k=>`<span style="color:${RAR[k].c}">${RAR[k].n} ${+(b.odds[k]*100).toFixed(1)}%</span>`).join(' &middot; ')}</small></span><span class="pr">${can?coinImg+b.price:'Need '+(b.price-prog.coins)}</span></button>`}).join('');
- const list=[''].concat(WRAPS.slice().sort((a,b)=>RAR_ORDER.indexOf(a.r)-RAR_ORDER.indexOf(b.r)).map(w=>w.id));
- $('wcount').textContent=prog.wraps.length+'/'+WRAPS.length+' collected';
+ const SW=WRAPS.filter(w=>!w.x||XMAS_ON()||prog.wraps.includes(w.id));
+ const list=[''].concat(SW.slice().sort((a,b)=>RAR_ORDER.indexOf(a.r)-RAR_ORDER.indexOf(b.r)).map(w=>w.id));
+ $('wcount').textContent=prog.wraps.length+'/'+SW.length+' collected';
  $('wgrid').innerHTML=list.map(id=>{
   if(!id)return `<button class="wt${shown===''?' on':''}" data-w=""><span class="sp" style="background:#${hex(RANKS[sel].c)}"></span><b>Factory</b><small style="color:var(--muted)">Default</small></button>`;
   const w=WRAP_BY[id],own=prog.wraps.includes(id);
-  return `<button class="wt${own?'':' no'}${shown===id?' on':''}" data-w="${id}"><span class="sp" style="${sp(w)}"></span><b>${w.n}</b><small style="color:${RAR[w.r].c}">${RAR[w.r].n}</small></button>`}).join('');
+  return `<button class="wt${own?'':' no'}${shown===id?' on':''}${w.x?' xm':''}" data-w="${id}"><span class="sp" style="${sp(w)}"></span><b>${w.n}</b><small style="color:${RAR[w.r].c}">${RAR[w.r].n}</small></button>`}).join('');
 }
 function wrapAct(){
  const ew=prog.weq[sel]||'',shown=pvw!==undefined?pvw:ew;
@@ -240,13 +242,13 @@ $('modes').onclick=e=>{const b=e.target.closest('.mtab');if(!b||busy)return;mode
  if(mode==='wraps'&&!prog.owned.includes(sel))sel=prog.car;
  select(sel,true)};
 // open a box: the reel scrolls and lands on the wrap that was rolled
-$('boxes').onclick=e=>{const b=e.target.closest('.bx');if(!b||b.disabled||busy)return;openBox(BOXES.find(x=>x.id===b.dataset.b))};
+$('boxes').onclick=e=>{const b=e.target.closest('.bx');if(!b||b.disabled||busy)return;openBox(BOXES_ON().find(x=>x.id===b.dataset.b))};
 function openBox(b){
  if(prog.coins<b.price)return;busy=true;prog.coins-=b.price;
  const win=rollBox(b),dupe=prog.wraps.includes(win.id);
  if(dupe)prog.coins+=DUPE[win.r];else prog.wraps.push(win.id);saveProg();
- const IDX=38,STEP=116,items=[];
- for(let i=0;i<46;i++)items.push(i===IDX?win:WRAPS[Math.floor(Math.random()*WRAPS.length)]);
+ const IDX=38,STEP=116,items=[],RP=WRAPS.filter(w=>!!w.x===!!b.xmas);
+ for(let i=0;i<46;i++)items.push(i===IDX?win:RP[Math.floor(Math.random()*RP.length)]);
  $('ovt').textContent=b.n;$('res').innerHTML='';$('ovbtns').style.display='none';
  const tr=$('track');tr.style.transition='none';tr.style.transform='translateX(0)';
  tr.innerHTML=items.map(w=>`<div class="it" style="${sp(w)};--rc:${RAR[w.r].c}">${w.n}</div>`).join('');
