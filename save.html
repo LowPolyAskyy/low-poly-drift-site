@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Account and cloud save - Low Poly Drift</title>
+<meta name="description" content="Sign in to keep your Low Poly Drift progress in the cloud.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1a1216">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="ui.css">
+<style>
+body{justify-content:flex-start}.wrap{width:100%;max-width:560px;display:flex;flex-direction:column;gap:12px}
+.ch{display:flex;flex-direction:column;gap:8px}.ch b{font-size:18px}.ch small{color:var(--muted)}
+.bar{height:10px;border-radius:5px;background:rgba(255,255,255,.15);overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#7dff9b,#ffd84a)}
+.ok{color:#7dff9b}.row{display:flex;justify-content:space-between;gap:10px;align-items:center}
+textarea{font:13px monospace;width:100%;height:96px;border-radius:12px;border:0;padding:10px;background:rgba(0,0,0,.35);color:var(--ink)}
+.btn.sm{padding:10px 16px;font-size:15px}.acts{display:flex;gap:8px;flex-wrap:wrap}#msg{color:var(--muted);min-height:20px}
+</style>
+</head>
+<body>
+<div class="top"><button class="btn ghost" id="back">&larr; Menu</button><h2>Cloud Save</h2><span></span></div>
+<div class="wrap" id="w"></div>
+<script src="config.js"></script>
+<script src="device.js"></script>
+<script src="cars.js"></script>
+<script src="cloud.js"></script>
+<script>
+const $=id=>document.getElementById(id);$('back').onclick=()=>go('index.html');
+const say=t=>$('msg').textContent=t||'';
+function draw(){const u=CLOUD.user();
+$('w').innerHTML=u?'<div class="panel ch"><b>Signed in as '+u+'</b><small>Your progress saves to the cloud automatically after every race and purchase, and loads on any device where you sign in.</small><div class="acts"><button class="btn sm" id="now">Sync now</button><button class="btn ghost sm" id="out">Sign out</button></div></div>'
+:'<div class="panel ch"><b>Cloud save</b><small>Create a free account to keep your cars, wraps, coins and rank on every phone, browser and app.</small><input id="u" placeholder="Username" maxlength="16" autocapitalize="off" autocomplete="username"><input id="p" type="password" placeholder="Password (6+ characters)" autocomplete="current-password"><div class="acts"><button class="btn sm" id="in">Sign in</button><button class="btn ghost sm" id="up">Create account</button></div></div>';
+$('w').innerHTML+='<div id="msg"></div>';
+if(u){$('now').onclick=async()=>{say('Syncing...');const r=await CLOUD.sync();if(r&&r.status===401){say('Session expired');draw()}else say(r&&r.ok?'Synced!':(r&&r.err)||'Done')};$('out').onclick=async()=>{await CLOUD.logout();draw()}}
+else{const go2=a=>async()=>{say('Please wait...');const r=await CLOUD.auth(a,$('u').value,$('p').value);if(!r.ok){say(r.err||'Error');return}await CLOUD.sync();draw();say('Signed in!')};$('in').onclick=go2('login');$('up').onclick=go2('register')}}
+draw();
+</script>
+</body>
+</html>

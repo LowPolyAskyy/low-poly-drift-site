@@ -8,8 +8,13 @@ const SRC=window.PEERJS_SRC?[window.PEERJS_SRC]:['peerjs.min.js','https://unpkg.
 const S=()=>(typeof SET!=='undefined'?SET:{vcOn:true,vcVol:1,vcPtt:false,mic:''});
 let me='',room='',others=[],names={},peer=null,stream=null,joined=false,joining=false,muted=false,pttDown=false,ui=null;
 const calls={},audios={},meters={};let ac=null,tick=null,retry=null;
-const pid=(r,i)=>('ldpv1-'+r+'-'+i).replace(/[^A-Za-z0-9_-]/g,'_');
-const idOf=p=>others.find(o=>pid(room,o)===p);
+// The PeerJS cloud keeps an id "busy" for a while after a refresh / after pressing X, so rejoining could fail with "id unavailable".
+// Fix: if my id is still held I take the next slot ('', -b, -c, -d); everybody else simply calls all slots of every player.
+const SLOTS=['','-b','-c','-d'];
+const pid=(r,i,k)=>('ldpv1-'+r+'-'+i+(SLOTS[k||0]||'')).replace(/[^A-Za-z0-9_-]/g,'_');
+const idOf=p=>others.find(o=>SLOTS.some((_,k)=>pid(room,o,k)===p));
+const closeCalls=e=>{if(e)(e.cs||[e.c]).forEach(c=>{try{c&&c.close()}catch(_){}})};
+const killAudio=id=>{if(audios[id]){audios[id].srcObject=null;audios[id].remove();delete audios[id];delete meters[id];list()}};
 
 function build(){
   if(ui)return;
@@ -41,23 +46,31 @@ async function join(){
     paint(n==='NotAllowedError'||n==='SecurityError'?(window.IN_APP||window.top!==window?'Mic blocked: allow it in the app':'Mic blocked'):n==='NotSupportedError'?'Mic not supported here':n==='NotFoundError'||n==='OverconstrainedError'?'No microphone':'Mic error: '+(n||'?'));setTimeout(()=>paint(),4000);return}
   try{await loadPeerJS()}catch(e){stopStream();joining=false;paint('Voice unavailable');setTimeout(()=>paint(),2500);return}
   applyMute();
-  const p=new Peer(pid(room,me),window.PEER_CFG||{});peer=p;
+  startPeer(0)}
+function startPeer(k){
+  const p=new Peer(pid(room,me,k),window.PEER_CFG||{});peer=p;
   p.on('open',()=>{if(peer!==p)return;joined=true;joining=false;paint();meter('me',stream);connectAll();clearInterval(retry);retry=setInterval(()=>{connectAll();kick()},4000)});
   p.on('call',onCall);
-  p.on('error',e=>{if(e.type==='peer-unavailable')return;if(peer!==p)return;
-    if(!joined){joining=false;stopPeer();stopStream();paint(e.type==='unavailable-id'?'Voice id busy, retry':'Voice error');setTimeout(()=>paint(),2500)}});
+  p.on('error',e=>{if(e.type==='peer-unavailable')return;if(peer!==p)return;console.warn('voice: peer error',e.type);
+    if(!joined){
+      if(e.type==='unavailable-id'&&k<SLOTS.length-1){peer=null;try{p.destroy()}catch(_){}startPeer(k+1);return}   // old id still held by the server: take the next slot
+      joining=false;stopPeer();stopStream();paint(e.type==='unavailable-id'?'Voice busy, try again in a few seconds':'Voice error');setTimeout(()=>paint(),3000);return}
+    if(['network','server-error','socket-error','socket-closed'].includes(e.type))setTimeout(()=>{try{if(peer===p&&!p.destroyed&&p.disconnected)p.reconnect()}catch(_){}},3000)});
   p.on('disconnected',()=>{try{if(peer===p&&!p.destroyed)p.reconnect()}catch(_){}});
+  p.on('close',()=>{if(peer!==p)return;stopPeer();stopStream();joined=joining=false;paint('Voice lost, tap to rejoin');setTimeout(()=>paint(),3000)});
 }
 function connectAll(){
   if(!joined||!peer||peer.destroyed)return;
   const now=Date.now();
   others.forEach(id=>{const c=calls[id];
     if(c&&(c.got||now-c.t<6000))return;
-    if(c)try{c.c.close()}catch(_){}delete calls[id];
-    const call=peer.call(pid(room,id),stream);if(call)setup(call,id,'out')})}
-function setup(c,id,dir){
-  calls[id]={c,dir,t:Date.now(),got:false};
-  c.on('stream',s=>{const e=calls[id];if(e&&e.c===c)e.got=true;play(id,s)});
+    closeCalls(c);delete calls[id];
+    const cs=SLOTS.map((_,k)=>peer.call(pid(room,id,k),stream)).filter(Boolean);   // the player may be on any slot: the one that answers wins
+    calls[id]={c:null,cs,dir:'out',t:now,got:false};
+    cs.forEach(call=>hook(call,id))})}
+function hook(c,id){
+  c.on('stream',s=>{const e=calls[id];if(!e||!(e.c===c||(e.cs&&e.cs.includes(c))))return;
+    const others_=(e.cs||[]).filter(o=>o!==c);e.got=true;e.c=c;e.cs=[c];others_.forEach(o=>{try{o.close()}catch(_){}});play(id,s)});
   c.on('close',()=>drop(id,c));c.on('error',()=>drop(id,c))}
 function onCall(c){
   const id=idOf(c.peer);if(!id||!joined){try{c.close()}catch(_){}return}
@@ -65,10 +78,12 @@ function onCall(c){
   if(ex&&ex.c!==c){
     if(ex.got&&ex.dir==='out'){try{c.close()}catch(_){}return}              // already talking through my own call
     if(ex.dir==='out'&&me<id){try{c.close()}catch(_){}return}                // both called at once: the lower id keeps its call
-    try{ex.c.close()}catch(_){}}
-  c.answer(stream);setup(c,id,'in')}
-function drop(id,c){const e=calls[id];if(e&&e.c===c){delete calls[id]}
-  if(audios[id]&&(!e||e.c===c)){audios[id].srcObject=null;audios[id].remove();delete audios[id];delete meters[id];list()}}
+    closeCalls(ex);delete calls[id]}
+  c.answer(stream);calls[id]={c:null,cs:[c],dir:'in',t:Date.now(),got:false};hook(c,id)}
+function drop(id,c){const e=calls[id];
+  if(e&&e.c===c){delete calls[id];killAudio(id)}
+  else if(e&&e.cs){e.cs=e.cs.filter(x=>x!==c);if(!e.got&&!e.cs.length)delete calls[id]}
+  else if(!e)killAudio(id)}
 function play(id,s){
   let a=audios[id];if(!a){a=audios[id]=new Audio();a.autoplay=true;document.body.appendChild(a);a.style.display='none'}
   a.srcObject=s;a.muted=false;a.volume=Math.max(0,Math.min(1,+S().vcVol||0));a.setAttribute('playsinline','');
@@ -89,18 +104,19 @@ function list(){if(!ui)return;ui.querySelector('#vcl').innerHTML=Object.keys(met
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 function stopStream(){if(stream)stream.getTracks().forEach(t=>t.stop());stream=null}
-function stopPeer(){clearInterval(retry);retry=null;for(const id in calls){try{calls[id].c.close()}catch(_){}delete calls[id]}
+function stopPeer(){clearInterval(retry);retry=null;for(const id in calls){closeCalls(calls[id]);delete calls[id]}
   for(const id in audios){audios[id].srcObject=null;audios[id].remove();delete audios[id]}for(const k in meters)delete meters[k];
   if(peer){try{peer.destroy()}catch(_){}peer=null}}
 function stop(keepUI){stopPeer();stopStream();joined=joining=false;muted=false;list();if(keepUI)paint()}
 
+addEventListener('pagehide',()=>{try{if(peer)peer.destroy()}catch(_){}});
 window.VC={
   update(myId,roomCode,otherIds,nameMap){
     if(!S().vcOn){this.leave();return}
     build();ui.style.display='flex';
     if(joined&&(myId!==me||roomCode!==room))stop(true);
     me=String(myId);room=String(roomCode||'room');others=(otherIds||[]).map(String);names=nameMap||{};
-    for(const id in calls)if(!others.includes(id)){try{calls[id].c.close()}catch(_){}delete calls[id];if(audios[id]){audios[id].srcObject=null;audios[id].remove();delete audios[id]}delete meters[id]}
+    for(const id in calls)if(!others.includes(id)){closeCalls(calls[id]);delete calls[id];killAudio(id);delete meters[id]}
     list();paint();if(joined)connectAll()},
   leave(){stop(false);if(ui)ui.style.display='none'},
   get joined(){return joined}

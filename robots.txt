@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://TUOSITO.netlify.app/sitemap.xml
+Sitemap: https://low-poly-drift.vercel.app/sitemap.xml

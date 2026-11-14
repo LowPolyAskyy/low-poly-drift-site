@@ -193,7 +193,7 @@ try{prog.coins=Math.max(0,+localStorage.dn_coins||0);
  const c=+localStorage.dn_car2|0;prog.car=prog.owned.includes(c)?c:0}catch(e){}
 try{const w=JSON.parse(localStorage.dn_wraps||'[]');if(Array.isArray(w))prog.wraps=[...new Set(w.filter(x=>WRAP_BY[x]))];
  const e=JSON.parse(localStorage.dn_wrapeq||'{}');if(e&&typeof e==='object')for(const k in e)if(RANKS[k|0]&&prog.wraps.includes(e[k]))prog.weq[k|0]=e[k]}catch(e){}
-const saveProg=()=>{try{localStorage.dn_coins=prog.coins;localStorage.dn_owned2=JSON.stringify(prog.owned);localStorage.dn_car2=prog.car;localStorage.dn_elo=prog.elo;localStorage.dn_wraps=JSON.stringify(prog.wraps);localStorage.dn_wrapeq=JSON.stringify(prog.weq)}catch(e){}};
+const saveProg=()=>{try{localStorage.dn_coins=prog.coins;localStorage.dn_owned2=JSON.stringify(prog.owned);localStorage.dn_car2=prog.car;localStorage.dn_elo=prog.elo;localStorage.dn_wraps=JSON.stringify(prog.wraps);localStorage.dn_wrapeq=JSON.stringify(prog.weq);localStorage.dn_dirty=1;window.CLOUD&&CLOUD.dirty()}catch(e){}};
 const hex=c=>c.toString(16).padStart(6,'0');
 const coinImg='<img src="emblems/coin.webp" alt="coins" onerror="this.style.display=\'none\'">';
 // navigate keeping the phone-test flag (?m=1)

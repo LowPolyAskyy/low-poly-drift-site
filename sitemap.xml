@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://TUOSITO.netlify.app/</loc>
+    <loc>https://low-poly-drift.vercel.app/</loc>
   </url>
   <url>
-    <loc>https://TUOSITO.netlify.app/download.html</loc>
+    <loc>https://low-poly-drift.vercel.app/download.html</loc>
   </url>
   <url>
-    <loc>https://TUOSITO.netlify.app/lobby.html</loc>
+    <loc>https://low-poly-drift.vercel.app/lobby.html</loc>
   </url>
   <url>
-    <loc>https://TUOSITO.netlify.app/shop.html</loc>
+    <loc>https://low-poly-drift.vercel.app/shop.html</loc>
   </url>
   <url>
-    <loc>https://TUOSITO.netlify.app/settings.html</loc>
+    <loc>https://low-poly-drift.vercel.app/settings.html</loc>
+  </url>
+  <url>
+    <loc>https://low-poly-drift.vercel.app/advent.html</loc>
   </url>
 </urlset>

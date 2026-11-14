@@ -151,6 +151,7 @@ body.mob #tip{font-size:11px;bottom:calc(58px + env(safe-area-inset-bottom,0px))
 <script>window.THREE||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>')</script>
 <script src="config.js"></script>
 <script src="cars.js"></script>
+<script src="cloud.js"></script>
 <script src="carmodel.js"></script>
 <script src="voice.js"></script>
 <script src="device.js"></script>
@@ -286,11 +287,11 @@ function addCone(i,o){
   g.position.set(p.x+n.x*o,EL[i],p.z+n.z*o);RG.add(g);cones.push({y0:EL[i],g,vx:0,vz:0,vy:0,sp:0,hit:false});
 }
 const dtM=mat(0x1d120c),rimM2=mat(0x7a5634);
-function addDitch(i,s){const p=P[i],n=NRM[i],a=s>0?-1.5:-ROAD,b=s>0?ROAD:1.5,c=(a+b)/2,w=b-a,len=7,x=p.x+n.x*c,z=p.z+n.z*c,gr=(EL[(i+1)%N]-EL[(i+N-1)%N])/(2*DS),g=new THREE.Group();
-  const pit=new THREE.Mesh(new THREE.BoxGeometry(w,.08,len),dtM);pit.position.y=.13;g.add(pit);
-  [-1,1].forEach(q=>{const r=new THREE.Mesh(new THREE.BoxGeometry(w,.1,.7),rimM2);r.position.set(0,.14,q*(len/2+.35));g.add(r)});
+function addDitch(i,s,o){const p=P[i],n=NRM[i],a=s>0?-1.5:-ROAD,b=s>0?ROAD:1.5,c=(a+b)/2,w=b-a,len=7,x=p.x+n.x*c,z=p.z+n.z*c,gr=(EL[(i+1)%N]-EL[(i+N-1)%N])/(2*DS),g=new THREE.Group();
+  const pit=new THREE.Mesh(new THREE.BoxGeometry(w,.08,len),(o&&o.pm)||dtM);pit.position.y=.13;g.add(pit);
+  [-1,1].forEach(q=>{const r=new THREE.Mesh(new THREE.BoxGeometry(w,.1,.7),(o&&o.rm)||rimM2);r.position.set(0,.14,q*(len/2+.35));g.add(r)});
   g.position.set(x,EL[i],z);g.rotation.order='YXZ';g.rotation.set(-Math.atan(gr),TH[i],0);RG.add(g);
-  ditches.push({x,z,t:TH[i],l:len/2,a,b})}
+  ditches.push({x,z,t:TH[i],l:len/2,a,b,k:o&&o.k,hurt:o&&o.hurt})}
 const SL=20;
 for(let j=1;j<SL;j++){const i0=Math.round(j*N/SL),k=(j-1)%4,sg=(j&2)?1:-1;
   if(JZ.some(z=>i0+36>=z.a-14&&i0-6<=z.e+14))continue;
@@ -298,6 +299,42 @@ for(let j=1;j<SL;j++){const i0=Math.round(j*N/SL),k=(j-1)%4,sg=(j&2)?1:-1;
   else if(k==1){for(let q=0;q<3;q++)addBlock(i0+q*10,(q%2?4:-4)*sg);occ.push([i0-4,i0+24])}
   else{for(let q=0;q<6;q++)addCone(i0+q*6,q%2?5:-5);occ.push([i0-4,i0+34])}}
 for(let i=60;i<N-20;i+=10)if(!occ.some(r=>i>=r[0]&&i<=r[1]))addCone(i,(i/10|0)%2?ROAD-1.3:-ROAD+1.3);
+// ---------- ONE CUSTOM OBSTACLE PER MAP (M.ob) ----------
+// solid = like the concrete blocks (hl/hw = half length/width, o = sideways offset), smash = knock-over like cones, pit = slow zone (lava also hurts)
+{const OB=M.ob;if(OB){
+ const cyl=(r,h,m,x,y,z,rz)=>{const q=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,10),m);q.position.set(x,y,z);if(rz)q.rotation.z=rz;return q},
+  box=(w,h,d,m,x,y,z)=>{const q=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);q.position.set(x,y,z);return q},
+  sph=(r,m,x,y,z)=>{const q=new THREE.Mesh(new THREE.SphereGeometry(r,10,8),m);q.position.set(x,y,z);return q},
+  cone=(r,h,sg,m,x,y,z)=>{const q=new THREE.Mesh(new THREE.ConeGeometry(r,h,sg),m);q.position.set(x,y,z);return q},
+  bas=c=>new THREE.MeshBasicMaterial({color:c}),H=Math.PI/2,
+  G=(...a)=>{const g=new THREE.Group();a.forEach(x=>g.add(x));return g};
+ const DEF={
+  // --- solid ---
+  log:{t:'solid',hl:.9,hw:3.05,o:4.6,mk:()=>G(cyl(.85,6,mat(0x6b4a2b),0,.85,0,H),cyl(.8,.1,mat(0xd2a870),3.02,.85,0,H),cyl(.8,.1,mat(0xd2a870),-3.02,.85,0,H),box(.5,.3,.5,mat(0x4a7a3a),0,1.75,0))},
+  neon:{t:'solid',hl:.45,hw:2.6,o:4.8,mk:()=>G(box(5.2,1.6,.6,mat(0x1a1030),0,.8,0),box(5.2,.14,.72,bas(0xff2fd0),0,1.58,0),box(5.2,.14,.72,bas(0xff2fd0),0,.1,0),box(4.4,.28,.66,bas(0x00e5ff),0,.8,0),box(.3,2.2,.3,mat(0x2a2040),2.5,1.1,0),box(.3,2.2,.3,mat(0x2a2040),-2.5,1.1,0))},
+  lantern:{t:'solid',hl:1,hw:1,o:4,mk:()=>{const st=mat(0x9a9a9a),dk=mat(0x6e6e72);return G(box(1.6,.35,1.6,st,0,.18,0),cyl(.3,1.2,st,0,.95,0),box(1.1,.9,1.1,bas(0xffd98a),0,2,0),cone(1.2,.8,4,dk,0,2.8,0),sph(.2,dk,0,3.3,0)).rotateY(.4)}},
+  hay:{t:'solid',hl:1.2,hw:1.3,o:4,mk:()=>G(cyl(1.2,2.4,mat(0xd9b24a),0,1.2,0,H),cyl(1.21,.1,mat(0xb48a2c),.7,1.2,0,H),cyl(1.21,.1,mat(0xb48a2c),-.7,1.2,0,H),cyl(1.21,.1,mat(0xb48a2c),0,1.2,0,H))},
+  ginger:{t:'solid',hl:1.4,hw:1.6,o:4,mk:()=>G(box(3,1.5,2.6,mat(0x8a4b22),0,.75,0),box(3.3,.3,2.9,mat(0xffffff),0,1.65,0),box(.8,1,.1,mat(0x4a2410),0,.5,1.32),sph(.25,mat(0xe0243a),-1.1,1.95,.6),sph(.25,mat(0x2fbf4a),.2,1.95,-.7),sph(.25,mat(0xffc400),1.1,1.95,.5),cyl(.18,.1,mat(0xff5a7a),-1.2,.9,1.32,H))},
+  // --- smash ---
+  cactus:{t:'smash',mk:()=>{const m=mat(0x3f8f3a);return G(cyl(.5,3,m,0,1.5,0),cyl(.28,1.1,m,.9,1.7,0,H),cyl(.28,1.1,m,-.9,2.1,0,H),cyl(.26,1,m,1.4,2.3,0),cyl(.26,1,m,-1.4,2.7,0),sph(.5,m,0,3.05,0))}},
+  snowman:{t:'smash',mk:()=>{const w=mat(0xffffff);const n=cone(.14,.7,6,mat(0xff7a1a),0,3.25,.65);n.rotation.x=H;return G(sph(1,w,0,1,0),sph(.75,w,0,2.3,0),sph(.52,w,0,3.25,0),n,cyl(.55,.12,mat(0x222222),0,3.85,0),cyl(.35,.5,mat(0x222222),0,4.15,0),sph(.08,mat(0x111111),-.18,3.4,.45),sph(.08,mat(0x111111),.18,3.4,.45))}},
+  sandcastle:{t:'smash',mk:()=>{const s=mat(0xe6c98a),r=mat(0xd9695a),g=new THREE.Group();g.add(box(2.6,1.3,2.6,s,0,.65,0));[[-1.1,-1.1],[1.1,-1.1],[-1.1,1.1],[1.1,1.1]].forEach(([x,z])=>{g.add(cyl(.45,2,s,x,1,z));g.add(cone(.6,.8,8,r,x,2.4,z))});g.add(box(.08,1,.08,mat(0xffffff),0,1.8,0));g.add(box(.6,.4,.05,mat(0xe0243a),.3,2.1,0));return g}},
+  crystal:{t:'smash',mk:()=>{const a=bas(0x7af0ff),b=bas(0xb28cff),g=new THREE.Group();[[0,0,.8,2.4,a],[.9,.4,.55,1.7,b],[-.8,-.3,.6,1.9,a],[.2,-.9,.45,1.3,b]].forEach(([x,z,r,h,m])=>{const q=new THREE.Mesh(new THREE.OctahedronGeometry(r,0),m);q.scale.set(1,h/r/1.4,1);q.position.set(x,h*.5,z);q.rotation.z=x*.15;g.add(q)});return g}},
+  // --- pit ---
+  mud:{t:'pit',pm:mat(0x4a3420),rm:mat(0x6a4a2a),k:5.5},
+  lava:{t:'pit',pm:bas(0xff5a1a),rm:mat(0x2a1c1a),k:2.6,hurt:2}};
+ const D=DEF[OB];
+ if(D){const SITES=9;
+  for(let j=0;j<SITES;j++){
+   const base=Math.round(75+j*(N-160)/SITES);let f=-1;
+   for(let d=0;d<=44&&f<0;d+=4)for(const sg of d?[1,-1]:[1]){const i=base+sg*d;if(i>=50&&i<N-30&&!occ.some(r=>i>=r[0]-3&&i<=r[1]+3)){f=i;break}}
+   if(f<0)continue;
+   const i=f,sd=j%2?1:-1,p=P[i],n=NRM[i];
+   if(D.t==='pit'){addDitch(i,sd,D);occ.push([i-5,i+8])}
+   else if(D.t==='solid'){const o=sd*D.o,x=p.x+n.x*o,z=p.z+n.z*o,g=D.mk();g.position.set(x,EL[i],z);g.rotation.y=TH[i];g.traverse(q=>{if(q.isMesh)q.castShadow=true});RG.add(g);blocks.push({x,z,t:TH[i],hl:D.hl,hw:D.hw});occ.push([i-4,i+8])}
+   else{[[0,-4.5*sd],[3,3.5*sd]].forEach(([di,o])=>{const k=Math.min(N-1,i+di),q=P[k],m=NRM[k],g=D.mk();g.position.set(q.x+m.x*o,EL[k],q.z+m.z*o);g.traverse(w=>{if(w.isMesh)w.castShadow=true});RG.add(g);cones.push({y0:EL[k],g,vx:0,vz:0,vy:0,sp:0,hit:false})});occ.push([i-4,i+9])}
+  }}
+}}
 // Power-up: pochi spawn casuali, ricompensa casuale e colore animato.
 const PICKUP_COUNT=6;
 const octG=new THREE.OctahedronGeometry(1.1,0),ringG=new THREE.RingGeometry(1.4,2,16);ringG.rotateX(-Math.PI/2);
@@ -544,7 +581,7 @@ function step(dt){if(net.kicked){S.vx=S.vz=0;S.st=0}if(ARENA)return stepArena(dt
   if(!A('ghost')&&!A('hover')&&AIRH<1.4)for(const b of blocks){
     const ux=Math.sin(b.t),uz=Math.cos(b.t),wx=Math.cos(b.t),wz=-Math.sin(b.t);
     const dx=S.x-b.x,dz=S.z-b.z,lx=dx*ux+dz*uz,lw=dx*wx+dz*wz;
-    const cx=clamp(lx,-2.5,2.5),cw=clamp(lw,-1.1,1.1),ex=lx-cx,ew=lw-cw,d=Math.hypot(ex,ew),R=A('mini')?1:1.4;
+    const HL=b.hl||2.5,HW=b.hw||1.1,cx=clamp(lx,-HL,HL),cw=clamp(lw,-HW,HW),ex=lx-cx,ew=lw-cw,d=Math.hypot(ex,ew),R=A('mini')?1:1.4;
     if(d<R){
       let a=ex,w=ew;if(d<1e-4){a=0;w=lw>=0?1:-1}else{a/=d;w/=d}
       bounce(a*ux+w*wx,a*uz+w*wz,R-d);
@@ -563,10 +600,11 @@ function step(dt){if(net.kicked){S.vx=S.vz=0;S.st=0}if(ARENA)return stepArena(dt
     }
   }
   // ditches
-  let inD=false;
+  let inD=false,dd=null;
   if(!A('hover')&&!S.air)for(const d of ditches){const ux=Math.sin(d.t),uz=Math.cos(d.t),dx=S.x-d.x,dz=S.z-d.z;
-    if(Math.abs(dx*ux+dz*uz)<d.l){const lw=-dx*uz+dz*ux;if(lw>d.a&&lw<d.b){inD=true;break}}}
-  if(inD){const k=Math.exp(-3.5*dt);S.vx*=k;S.vz*=k;if(!S.inD&&sp>10){S.shake=Math.max(S.shake,1.2);chain=0;st.dit++}}
+    if(Math.abs(dx*ux+dz*uz)<d.l){const lw=-dx*uz+dz*ux;if(lw>d.a&&lw<d.b){inD=true;dd=d;break}}}
+  if(inD){const k=Math.exp(-(dd.k||3.5)*dt);S.vx*=k;S.vz*=k;if(!S.inD&&sp>10){S.shake=Math.max(S.shake,1.2);chain=0;st.dit++}
+    if(dd.hurt&&!A('shield')){if(!S.inD)hurt(dd.hurt*3,true);else hurt(dd.hurt*dt,true)}}
   S.inD=inD;S.dip+=((inD?-.55:A('hover')?2.2:0)-S.dip)*Math.min(1,dt*9);
   // power-ups
   if(mode==='race')for(const p of pickups)if(p.on&&AIRH<3.5){const dx=p.x-S.x,dz=p.z-S.z;if(dx*dx+dz*dz<9){p.on=false;p.m.visible=false;p.respawn=3+rnd()*2;const w=PW[Math.floor(rnd()*PW.length)];toast(w.n+'!',w.c);if(w.t)act[w.k]=(act[w.k]||0)+w.t;else w.f()}}
@@ -642,17 +680,17 @@ function drawMap(){
 // ---------- maps ----------
 const ring=(R,k,a,m,b,ph,sx)=>Array.from({length:96},(_,i)=>{const t=i/96*TAU,r=R*(1+a*Math.cos(k*t+ph)+b*Math.cos(m*t));return[Math.cos(t)*r*sx,Math.sin(t)*r]});
 const MAPS=[
-{n:'Sunset Hills',k:'pine',c:[[0,-200],[130,-190],[230,-110],[240,0],[170,60],[190,150],[110,230],[-10,200],[-70,120],[-150,140],[-240,70],[-230,-40],[-130,-80],[-120,-170]],g:0x6f9460,t:0x4d5fa8,f:0xf2c29b,fn:90,ff:300,hc:0xfff0d8,hg:0x5a7a55,hi:.9,sc:0xffe6c0,si:.85,b1:[.86,.86,.84],b2:[.78,.22,.18],d:[.5,.16,.85],dc:0xfff1c8,ds:22,cl:12,cc:0xffd9bd,mtn:0xa6788a},
-{n:'Neon City',k:'city',c:ring(165,3,.16,5,.05,0,1.15),g:0x14141c,t:0x03030c,f:0x1b1038,fn:50,ff:260,hc:0x7a7cff,hg:0x20103a,hi:.7,sc:0x8fa0ff,si:.35,b1:[0,.9,1],b2:[1,.1,.7],neon:1,st:1,d:[-.5,.35,-.6],dc:0xdfe8ff,ds:16,hl:1.4},
-{n:'Deep Jungle',k:'jungle',c:ring(150,2,.22,3,.1,.6,1.2),g:0x2c4a26,t:0x2f6b4a,f:0x7fae8a,fn:25,ff:170,hc:0xd7ffd0,hg:0x2a3a20,hi:.8,sc:0xfff3b0,si:.6,b1:[.45,.32,.2],b2:[.3,.45,.2],d:[.2,.6,.3],dc:0xfff7c0,ds:14,hl:.5},
-{n:'Desert Canyon',k:'mesa',c:ring(160,2,.2,5,.07,2,1.2),g:0xd8a868,t:0x2f7ed8,f:0xf2dcb0,fn:110,ff:340,hc:0xfff4e0,hg:0xb98a50,hi:1,sc:0xfff0d0,si:1,b1:[.9,.85,.7],b2:[.8,.45,.2],d:[-.3,.55,.7],dc:0xfffbe8,ds:18,cl:10,cc:0xffffff,mtn:0xc47c58,dig:8,run:3,sheer:1,bk:0xb8603c},
-{n:'Cherry Grove',k:'leaf',hill:14,hp:1,c:ring(145,3,.2,2,.12,.3,1.25),g:0x9bc277,bk:0x8a6a52,dig:3,run:5,th:[.92,.06,.65,.72,.1],t:0xf6a9c4,f:0xffe3e6,fn:70,ff:320,hc:0xfff0f2,hg:0x8a7a60,hi:.95,sc:0xffe6d0,si:.8,d:[.4,.3,.85],dc:0xfff4e0,ds:22,cl:12,cc:0xfff1f4,mtn:0xe3a4bd},
-{n:'Frozen Peaks',k:'snow',hill:9,hp:2,c:ring(155,5,.12,3,.1,1.2,1.1),g:0xeef4fa,th:[.45,.08,.25,.4,.2],t:0x7fb2e0,f:0xdcebf7,fn:60,ff:300,hc:0xe8f2ff,hg:0x9ab0c8,hi:1,sc:0xfff4e6,si:.75,b1:[.9,.95,1],b2:[.3,.55,.85],d:[-.4,.3,.8],dc:0xffffff,ds:16,cl:10,cc:0xffffff,mtn:0xdfeaf5},
-{n:'Ember Crater',k:'mesa',hill:20,hp:0,sp:1,lava:1,mh:[0,.04,.3,.1,.08],c:ring(150,4,.18,3,.08,2.4,1),g:0x241716,t:0x3a1020,f:0xd2542a,fn:40,ff:240,hc:0xff9a70,hg:0x3a1a14,hi:.8,sc:0xff8a50,si:.7,b1:[1,.4,.1],b2:[.15,.1,.1],neon:1,d:[.3,.12,.9],dc:0xffb060,ds:26,hl:.8,mtn:0x3a2020,cl:8,cc:0x6b3028},
-{n:'Coral Coast',k:'palm',shore:50,c:ring(140,2,.22,4,.08,.8,1.25),g:0xf2dca8,bk:0xd9bd86,t:0x39b6e6,f:0xcdf0f2,fn:90,ff:340,hc:0xfff6e0,hg:0xc9b27a,hi:1,sc:0xfff0d0,si:1,b1:[1,1,1],b2:[.1,.6,.8],d:[.2,.5,.85],dc:0xffffff,ds:20,cl:14,cc:0xffffff},
-{n:'Autumn Ridge',k:'leaf',hill:5,hp:3,th:[0,.12,.8,.42,.14],c:ring(150,3,.2,5,.08,1.9,1.15),g:0xb08a4e,t:0xf3a35c,f:0xffdcb0,fn:60,ff:300,hc:0xffe2bd,hg:0x7a5a30,hi:.9,sc:0xffc88a,si:.9,b1:[.95,.9,.8],b2:[.8,.35,.15],d:[-.5,.25,.8],dc:0xfff0c0,ds:24,cl:10,cc:0xffe9d0,mtn:0x9a5a48},
-{n:'Candy Cane Lane',k:'snow',x:1,xm:'candy',nt:1,hill:6,hp:2,c:ring(150,4,.16,3,.09,.7,1.2),g:0xf6f9ff,th:[.33,.05,.55,.28,.12],t:0xffb3c8,f:0xfff0f4,fn:70,ff:320,hc:0xfff2f4,hg:0xa8b8d0,hi:1,sc:0xffeedd,si:.85,b1:[.96,.96,.98],b2:[.85,.1,.15],d:[-.3,.35,.8],dc:0xffffff,ds:18,cl:12,cc:0xffffff,mtn:0xf2d8e2},
-{n:'Aurora Night',k:'snow',x:1,xm:'aurora',nt:1,aur:1,hill:8,hp:2,c:ring(160,3,.18,5,.07,2.1,1.15),g:0xc7d8f0,th:[.38,.06,.5,.2,.1],t:0x050b24,f:0x1d6b6a,fn:40,ff:260,hc:0x6f8fd8,hg:0x1a2a4a,hi:.75,sc:0xaecbff,si:.45,b1:[.1,.9,.5],b2:[.9,.1,.3],neon:1,st:1,d:[.4,.5,-.5],dc:0xcfe0ff,ds:14,hl:1.2,mtn:0x28406a}];
+{n:'Sunset Hills',ob:'log',k:'pine',c:[[0,-200],[130,-190],[230,-110],[240,0],[170,60],[190,150],[110,230],[-10,200],[-70,120],[-150,140],[-240,70],[-230,-40],[-130,-80],[-120,-170]],g:0x6f9460,t:0x4d5fa8,f:0xf2c29b,fn:90,ff:300,hc:0xfff0d8,hg:0x5a7a55,hi:.9,sc:0xffe6c0,si:.85,b1:[.86,.86,.84],b2:[.78,.22,.18],d:[.5,.16,.85],dc:0xfff1c8,ds:22,cl:12,cc:0xffd9bd,mtn:0xa6788a},
+{n:'Neon City',ob:'neon',k:'city',c:ring(165,3,.16,5,.05,0,1.15),g:0x14141c,t:0x03030c,f:0x1b1038,fn:50,ff:260,hc:0x7a7cff,hg:0x20103a,hi:.7,sc:0x8fa0ff,si:.35,b1:[0,.9,1],b2:[1,.1,.7],neon:1,st:1,d:[-.5,.35,-.6],dc:0xdfe8ff,ds:16,hl:1.4},
+{n:'Deep Jungle',ob:'mud',k:'jungle',c:ring(150,2,.22,3,.1,.6,1.2),g:0x2c4a26,t:0x2f6b4a,f:0x7fae8a,fn:25,ff:170,hc:0xd7ffd0,hg:0x2a3a20,hi:.8,sc:0xfff3b0,si:.6,b1:[.45,.32,.2],b2:[.3,.45,.2],d:[.2,.6,.3],dc:0xfff7c0,ds:14,hl:.5},
+{n:'Desert Canyon',ob:'cactus',k:'mesa',c:ring(160,2,.2,5,.07,2,1.2),g:0xd8a868,t:0x2f7ed8,f:0xf2dcb0,fn:110,ff:340,hc:0xfff4e0,hg:0xb98a50,hi:1,sc:0xfff0d0,si:1,b1:[.9,.85,.7],b2:[.8,.45,.2],d:[-.3,.55,.7],dc:0xfffbe8,ds:18,cl:10,cc:0xffffff,mtn:0xc47c58,dig:8,run:3,sheer:1,bk:0xb8603c},
+{n:'Cherry Grove',ob:'lantern',k:'leaf',hill:14,hp:1,c:ring(145,3,.2,2,.12,.3,1.25),g:0x9bc277,bk:0x8a6a52,dig:3,run:5,th:[.92,.06,.65,.72,.1],t:0xf6a9c4,f:0xffe3e6,fn:70,ff:320,hc:0xfff0f2,hg:0x8a7a60,hi:.95,sc:0xffe6d0,si:.8,d:[.4,.3,.85],dc:0xfff4e0,ds:22,cl:12,cc:0xfff1f4,mtn:0xe3a4bd},
+{n:'Frozen Peaks',ob:'snowman',k:'snow',hill:9,hp:2,c:ring(155,5,.12,3,.1,1.2,1.1),g:0xeef4fa,th:[.45,.08,.25,.4,.2],t:0x7fb2e0,f:0xdcebf7,fn:60,ff:300,hc:0xe8f2ff,hg:0x9ab0c8,hi:1,sc:0xfff4e6,si:.75,b1:[.9,.95,1],b2:[.3,.55,.85],d:[-.4,.3,.8],dc:0xffffff,ds:16,cl:10,cc:0xffffff,mtn:0xdfeaf5},
+{n:'Ember Crater',ob:'lava',k:'mesa',hill:20,hp:0,sp:1,lava:1,mh:[0,.04,.3,.1,.08],c:ring(150,4,.18,3,.08,2.4,1),g:0x241716,t:0x3a1020,f:0xd2542a,fn:40,ff:240,hc:0xff9a70,hg:0x3a1a14,hi:.8,sc:0xff8a50,si:.7,b1:[1,.4,.1],b2:[.15,.1,.1],neon:1,d:[.3,.12,.9],dc:0xffb060,ds:26,hl:.8,mtn:0x3a2020,cl:8,cc:0x6b3028},
+{n:'Coral Coast',ob:'sandcastle',k:'palm',shore:50,c:ring(140,2,.22,4,.08,.8,1.25),g:0xf2dca8,bk:0xd9bd86,t:0x39b6e6,f:0xcdf0f2,fn:90,ff:340,hc:0xfff6e0,hg:0xc9b27a,hi:1,sc:0xfff0d0,si:1,b1:[1,1,1],b2:[.1,.6,.8],d:[.2,.5,.85],dc:0xffffff,ds:20,cl:14,cc:0xffffff},
+{n:'Autumn Ridge',ob:'hay',k:'leaf',hill:5,hp:3,th:[0,.12,.8,.42,.14],c:ring(150,3,.2,5,.08,1.9,1.15),g:0xb08a4e,t:0xf3a35c,f:0xffdcb0,fn:60,ff:300,hc:0xffe2bd,hg:0x7a5a30,hi:.9,sc:0xffc88a,si:.9,b1:[.95,.9,.8],b2:[.8,.35,.15],d:[-.5,.25,.8],dc:0xfff0c0,ds:24,cl:10,cc:0xffe9d0,mtn:0x9a5a48},
+{n:'Candy Cane Lane',ob:'ginger',k:'snow',x:1,xm:'candy',nt:1,hill:6,hp:2,c:ring(150,4,.16,3,.09,.7,1.2),g:0xf6f9ff,th:[.33,.05,.55,.28,.12],t:0xffb3c8,f:0xfff0f4,fn:70,ff:320,hc:0xfff2f4,hg:0xa8b8d0,hi:1,sc:0xffeedd,si:.85,b1:[.96,.96,.98],b2:[.85,.1,.15],d:[-.3,.35,.8],dc:0xffffff,ds:18,cl:12,cc:0xffffff,mtn:0xf2d8e2},
+{n:'Aurora Night',ob:'crystal',k:'snow',x:1,xm:'aurora',nt:1,aur:1,hill:8,hp:2,c:ring(160,3,.18,5,.07,2.1,1.15),g:0xc7d8f0,th:[.38,.06,.5,.2,.1],t:0x050b24,f:0x1d6b6a,fn:40,ff:260,hc:0x6f8fd8,hg:0x1a2a4a,hi:.75,sc:0xaecbff,si:.45,b1:[.1,.9,.5],b2:[.9,.1,.3],neon:1,st:1,d:[.4,.5,-.5],dc:0xcfe0ff,ds:14,hl:1.2,mtn:0x28406a}];
 const hl=new THREE.PointLight(0xffe9b0,0,45,1.5);hl.position.set(0,2.5,6);root.add(hl);
 function setup(M){
  scene.fog=new THREE.Fog(M.f,M.fn,M.ff);hemi.color.set(M.hc);hemi.groundColor.set(M.hg);hemi.intensity=M.hi;sun.color.set(M.sc);sun.intensity=M.si;hl.intensity=M.hl||0;
