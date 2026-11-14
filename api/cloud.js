@@ -3,7 +3,9 @@
 // (or UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN).
 // Keys: u:<name> account | t:<token> session | s:<name> save {ts,d} | rl:<ip>:<bucket> rate limit
 const crypto=require('crypto');
-const DB=process.env.UPSTASH_REDIS_REST_URL||process.env.KV_REST_API_URL,TK=process.env.UPSTASH_REDIS_REST_TOKEN||process.env.KV_REST_API_TOKEN;
+// Vercel names the variables <PREFIX>_REST_API_URL / _TOKEN (default prefix KV) or UPSTASH_REDIS_REST_URL / _TOKEN: accept any prefix.
+const E=Object.keys(process.env),fe=re=>{const k=E.find(x=>re.test(x)&&!/READ_ONLY/.test(x));return k?process.env[k]:''};
+const DB=fe(/(REST_API_URL|REDIS_REST_URL)$/),TK=fe(/(REST_API_TOKEN|REDIS_REST_TOKEN)$/);
 const R=async c=>{const r=await fetch(DB,{method:'POST',headers:{Authorization:'Bearer '+TK},body:JSON.stringify(c)});const j=await r.json();if(j.error)throw new Error(j.error);return j.result};
 const jget=async k=>{const v=await R(['GET',k]);try{return v?JSON.parse(v):null}catch(e){return null}};
 const scrypt=(p,s)=>new Promise((ok,no)=>crypto.scrypt(p,s,32,(e,k)=>e?no(e):ok(k.toString('hex'))));
