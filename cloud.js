@@ -15,12 +15,22 @@ async function push(force){if(!user()||busy)return{};busy=true;let r={};
   if(r.ok){W('dn_sync',String(r.ts));D('dn_dirty')}else if(r.status===401)clear();else if(r.status===409){busy=false;return sync()}}catch(e){}
  busy=false;return r}
 function take(r){KEYS.forEach(k=>{if(r.d&&typeof r.d[k]==='string')W(k,r.d[k])});W('dn_sync',String(r.ts));D('dn_dirty');location.reload()}
+const parse=(v,f)=>{try{const x=JSON.parse(v);return x===null||x===undefined?f:x}catch(e){return f}};
+async function merge(r){const c=r.d||{};
+ const mx=k=>String(Math.max(+L(k)||0,+c[k]||0));
+ const uni=k=>{const a=parse(L(k),[]),b=parse(c[k],[]);return JSON.stringify([...new Set([].concat(Array.isArray(a)?a:[],Array.isArray(b)?b:[]))])};
+ W('dn_coins',mx('dn_coins'));W('dn_elo',mx('dn_elo'));W('dn_owned2',uni('dn_owned2'));W('dn_wraps',uni('dn_wraps'));
+ W('dn_wrapeq',JSON.stringify(Object.assign({},parse(c.dn_wrapeq,{}),parse(L('dn_wrapeq'),{}))));   // equipped wraps: this device wins, the cloud fills the gaps
+ ['dn_car2','dn_set','dn_name','dr'].forEach(k=>{if(L(k)===null&&typeof c[k]==='string')W(k,c[k])});   // everything else: keep this device
+ const p=await push(true);if(p&&p.ok)location.reload()}
 async function sync(){if(!user())return{};const r=await call('load');if(r.status===401){clear();return r}if(!r.ok)return r;
  if(!r.d){if(hasProg())await push(true);return r}
  const s=+L('dn_sync')||0;
  if(r.ts===s){if(L('dn_dirty'))await push();return r}
  if(!L('dn_dirty')&&s){take(r);return r}
- if(!hasProg()||confirm('Cloud save found ('+(r.d.dn_coins||0)+' coins, '+(r.d.dn_elo||0)+' Elo).\nOK = use the cloud save\nCancel = keep this device and overwrite the cloud'))take(r);else await push(true);
+ if(!hasProg()){take(r);return r}   // nothing on this device yet: just load the cloud save
+ // both this device and the cloud have progress: no popup, the two saves are merged so nothing is lost
+ await merge(r);
  return r}
 function clear(){['dn_tok','dn_user','dn_sync','dn_dirty'].forEach(D)}
 async function auth(a,u,p){const r=await call(a,{u,p});if(r.ok){W('dn_tok',r.tok);W('dn_user',r.u);W('dn_sync','0');D('dn_dirty')}return r}

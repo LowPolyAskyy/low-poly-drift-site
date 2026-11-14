@@ -33,7 +33,16 @@ const RANKS=[
 {n:'Neon Hover',v:'Neon Hover',k:'neon',cat:'futuristic',ui:'#2b1b4a',c:0x2b1b4a,ac:0x00f0ff,dw:0,top:1.37,acc:1.44,steer:1.15,grip:1.15,price:6400,sx:1,sy:1,sz:1},
 {n:'Santa Sleigh',v:'Santa Sleigh',k:'sleigh',cat:'christmas',x:1,ui:'#c8102e',c:0xc8102e,ac:0xffe36a,dw:0,top:1.26,acc:1.34,steer:1.12,grip:1.18,price:3600,sx:1,sy:1,sz:1},
 {n:'Snow Plow',v:'Snow Plow',k:'plow',cat:'christmas',x:1,ui:'#f2a900',c:0xf2a900,ac:0xffa000,dw:0,top:0.96,acc:1.02,steer:0.88,grip:1.2,price:900,sx:1,sy:1,sz:1},
-{n:'Candy Cane Rally',v:'Candy Cane Rally',k:'candy',cat:'christmas',x:1,ui:'#e8e8ee',c:0xe8e8ee,ac:0xff3a5c,dw:0,top:1.1,acc:1.16,steer:1.06,grip:1.1,price:1500,sx:1,sy:1,sz:1}];
+{n:'Candy Cane Rally',v:'Candy Cane Rally',k:'candy',cat:'christmas',x:1,ui:'#e8e8ee',c:0xe8e8ee,ac:0xff3a5c,dw:0,top:1.1,acc:1.16,steer:1.06,grip:1.1,price:1500,sx:1,sy:1,sz:1},
+// ---- new cars (added after the Christmas ones so saved progress keeps working) ----
+{n:'Farm Tractor',v:'Farm Tractor',k:'tractor',cat:'offroad',ui:'#2f8f3a',c:0x2f8f3a,ac:0xfff2b0,dw:0,top:0.72,acc:0.8,steer:0.86,grip:1.3,price:180,sx:1,sy:1,sz:1},
+{n:'School Bus',v:'School Bus',k:'bus',cat:'van',ui:'#f2b705',c:0xf2b705,ac:0xfff2b0,dw:0,top:0.82,acc:0.76,steer:0.66,grip:1.0,price:300,sx:1,sy:1,sz:1},
+{n:'Mazda MX-5',v:'Mazda MX-5',k:'mx5',cat:'sporty',ui:'#e23b3b',c:0xe23b3b,ac:0xfff2b0,dw:0,top:0.93,acc:0.97,steer:1.06,grip:1.02,price:320,sx:1,sy:1,sz:1},
+{n:'Ambulance',v:'Ambulance',k:'ambulance',cat:'service',ui:'#f4f6f8',c:0xf4f6f8,ac:0xfff2b0,dw:0,top:1.0,acc:1.05,steer:0.86,grip:1.02,price:760,sx:1,sy:1,sz:1},
+{n:'Nissan Skyline GT-R',v:'Nissan Skyline GT-R',k:'gtr',cat:'sporty',ui:'#2f5fb5',c:0x2f5fb5,ac:0xfff2b0,dw:0,top:1.13,acc:1.15,steer:1.0,grip:1.1,price:1350,sx:1,sy:1,sz:1},
+{n:'Fire Truck',v:'Fire Truck',k:'firetruck',cat:'service',ui:'#d0171b',c:0xd0171b,ac:0xfff2b0,dw:0,top:0.98,acc:1.02,steer:0.82,grip:1.06,price:1400,sx:1,sy:1,sz:1},
+{n:'Rally Legend',v:'Rally Legend',k:'rally',cat:'offroad',ui:'#f2f2f2',c:0xf2f2f2,ac:0x1f4fd8,dw:0,top:1.1,acc:1.2,steer:1.12,grip:1.22,price:1850,sx:1,sy:1,sz:1},
+{n:'Stretch Limo',v:'Stretch Limo',k:'limo',cat:'service',ui:'#14151a',c:0x14151a,ac:0xffd84a,dw:0,top:1.06,acc:0.95,steer:0.7,grip:0.96,price:2100,sx:1,sy:1,sz:1}];
 // coins buy vehicles. Index 0 (the starter car) is free.
 const PRICES=RANKS.map(c=>c.price);
 // ---------- ranked tiers (Elo) ----------

@@ -456,6 +456,70 @@ if(K=='fiat'){ // round retro city car
   box(2.3,.03,4.6,new THREE.MeshBasicMaterial({color:ac,transparent:true,opacity:.45}),0,.14,0);
   box(2.3,.07,.55,bodyM,0,1.5,-2.15);box(1.8,.1,.05,glow(ac),0,.85,-2.21);lights(ac,.72,2.2,.5);
   wp=[[-1,1.4],[1,1.4],[-1,-1.3],[1,-1.3]];
+}else if(K=='tractor'){ // farm tractor: small front wheels, huge rear wheels, open cab
+  box(1.2,.8,2.0,bodyM,0,.95,1.3);box(1.0,.5,.06,darkM,0,.95,2.31);[-.3,0,.3].forEach(x=>box(.07,.4,.05,chrome,x,.95,2.35));
+  box(1.8,.55,1.6,darkM,0,.8,-.75);box(1.5,.08,.9,bodyM,0,1.3,-.1);
+  [[-.8,-.1],[.8,-.1],[-.8,-1.3],[.8,-1.3]].forEach(([x,z])=>box(.08,.95,.08,black,x,1.75,z));
+  box(1.9,.08,1.7,bodyM,0,2.25,-.7);box(1.6,.5,.04,glassM,0,1.75,-1.3);
+  box(.6,.16,.5,black,0,1.35,-.85);box(.5,.5,.14,black,0,1.62,-1.12);cyl(.24,.24,.05,black,0,1.7,-.15,'z');
+  cyl(.07,.07,1.0,black,.4,1.85,1.85);cyl(.12,.12,.1,black,.4,2.4,1.85);
+  [-1,1].forEach(s=>{box(.5,.08,1.9,bodyM,s*1.1,1.45,-1.1);cyl(.14,.14,.1,glow(0xfff2b0),s*.5,1.1,2.32,'z');box(.2,.14,.05,glow(0xff3a30),s*.7,.95,-1.56)});
+  wp=[[-1,1.5,.75],[1,1.5,.75],[-1,-1.1,1.55],[1,-1.1,1.55]];ws=1;tw=1.35;
+}else if(K=='bus'){ // yellow school bus
+  sh([[-2.6,.45],[-2.6,2.0],[2.1,2.0],[2.6,1.5],[2.6,.45]],2.0,bodyM);
+  box(2.04,.5,4.6,glassM,0,1.6,-.4);box(1.8,.7,.04,glassM,0,1.75,2.38,-Math.PI/4);
+  box(2.03,.08,5.1,black,0,1.15,0);box(2.03,.08,5.1,black,0,.75,0);box(2.0,.1,4.9,white,0,2.02,-.1);
+  roundLights(.85,2.62,.7,.2);[-1,1].forEach(s=>{box(.3,.12,.05,glow(0xff3a30),s*.85,.85,-2.61);cyl(.17,.17,.08,glow(0xffa000),s*.8,2.1,2.35,'z');cyl(.17,.17,.08,glow(0xff3a30),s*.8,2.1,-2.35,'z')});
+  cyl(.3,.3,.05,mat(0xd9141c),-1.03,1.35,1.3,'x');
+  box(2.1,.15,.2,chrome,0,.55,2.62);box(2.1,.15,.2,chrome,0,.55,-2.62);
+  wp=[[-1,1.85],[1,1.85],[-1,-1.75],[1,-1.75]];ws=1.1;
+}else if(K=='mx5'){ // open roadster
+  sh([[-1.9,.4],[-1.95,.88],[-1.1,.95],[.2,.92],[1.5,.82],[2.0,.68],[2.0,.4]],1.75,bodyM);
+  box(1.5,.5,.05,glassM,0,1.17,.4,-.8);box(1.5,.06,1.0,black,0,.96,-.65);
+  [-1,1].forEach(s=>{box(.5,.55,.16,black,s*.4,1.16,-.95);cyl(.07,.07,.55,chrome,s*.55,1.2,-1.3);box(.04,.1,1.2,white,s*.89,.7,.1)});
+  box(1.2,.04,.05,chrome,0,1.4,.4);box(1.8,.09,.35,darkM,0,.42,2.0);
+  roundLights(.8,1.97,.6,.17);tail(.85,-1.96);exhaust(-2.0);
+  wp=[[-1,1.25],[1,1.25],[-1,-1.2],[1,-1.2]];ws=.9;
+}else if(K=='ambulance'){ // box ambulance with red band, cross and flashing lights
+  van(mat(0xd0171b),white);
+  const rd=mat(0xd0171b);[-1,1].forEach(s=>{box(.04,.6,.2,rd,s*.97,1.5,-.9);box(.04,.2,.6,rd,s*.97,1.5,-.9);box(.04,.5,.5,glassM,s*.97,1.55,.5)});
+  const a=glow(0xff2020),b=glow(0x2f6bff);box(.7,.14,.3,a,-.4,2.12,.5);box(.7,.14,.3,b,.4,2.12,.5);FLASH.push({a,b,root});
+  box(.5,.14,.04,a,0,1.1,2.03);
+  wp=[[-1,1.35],[1,1.35],[-1,-1.3],[1,-1.3]];ws=.95;
+}else if(K=='gtr'){ // boxy coupe with big wing and quad tail lights
+  sh([[-2.0,.4],[-2.0,.98],[-.5,1.05],[.4,1.03],[1.3,.9],[2.05,.7],[2.05,.4]],1.9,bodyM);
+  sh([[-1.4,1.0],[-1.1,1.5],[.3,1.5],[.95,1.0]],1.62,glassM);
+  box(1.5,.08,1.5,bodyM,0,1.52,-.4);box(.5,.1,.7,black,0,1.05,1.0);
+  box(2.1,.07,.55,darkM,0,1.6,-2.05);[-1,1].forEach(s=>{box(.08,.5,.3,darkM,s*.7,1.33,-2.0);box(.04,.08,3.7,glow(R.ac),s*.96,.55,0);[.5,.85].forEach(x=>cyl(.14,.14,.08,glow(0xff3a30),s*x,.85,-2.04,'z'));cyl(.17,.17,.1,glow(0xfff2b0),s*.7,.8,2.04,'z')});
+  box(1.9,.08,.4,black,0,.38,2.1);exhaust(-2.1);
+  wp=[[-1,1.3],[1,1.3],[-1,-1.3],[1,-1.3]];ws=1.02;
+}else if(K=='firetruck'){ // fire engine with ladder and light bar
+  box(2.1,.9,5.0,bodyM,0,.85,0);box(2.1,.9,1.5,bodyM,0,1.75,1.65);
+  box(1.9,.55,.05,glassM,0,1.85,2.42);box(2.12,.45,.9,glassM,0,1.85,1.75);
+  [-1,1].forEach(s=>box(.05,.5,2.4,darkM,s*1.06,.95,-.9));
+  [-1,1].forEach(s=>box(.08,.08,3.4,chrome,s*.3,1.45,-.9));for(let i=0;i<8;i++)box(.7,.05,.08,chrome,0,1.45,-2.4+i*.42);
+  const a=glow(0xff2020),b=glow(0x2f6bff);box(.55,.14,.32,a,-.35,2.28,1.6);box(.55,.14,.32,b,.35,2.28,1.6);FLASH.push({a,b,root});
+  box(2.2,.2,.25,chrome,0,.55,2.5);box(2.2,.2,.25,chrome,0,.55,-2.5);box(1.5,.1,.04,white,0,1.2,2.51);
+  lights(null,.85,2.51,.3);tail(.9,-2.51);
+  wp=[[-1,1.7],[1,1.7],[-1,-1.6],[1,-1.6]];ws=1.15;wx=1.08;
+}else if(K=='rally'){ // rally hatch with roof scoop, light bar and big wing
+  const bl=mat(R.ac);
+  sh([[-1.8,.4],[-1.8,1.0],[1.2,1.05],[1.85,.8],[1.85,.4]],1.8,bodyM);
+  sh([[-1.7,1.0],[-1.5,1.55],[.5,1.55],[1.0,1.0]],1.65,glassM);
+  box(1.6,.08,2.0,bodyM,0,1.57,-.55);box(.5,.2,.6,black,0,1.7,.2);
+  [-1,1].forEach(s=>{box(.04,.18,3.6,bl,s*.91,.75,0);box(.08,.5,.3,darkM,s*.7,1.3,-1.85)});
+  box(1.9,.07,.5,bl,0,1.6,-1.85);box(.4,.03,1.7,bl,0,1.07,.35);
+  box(1.5,.28,.2,black,0,1.15,1.4);[-.6,-.2,.2,.6].forEach(x=>cyl(.12,.12,.12,glow(0xfff2b0),x,1.15,1.52,'z'));
+  box(1.9,.1,.3,darkM,0,.42,1.85);tail(.9,-1.81);exhaust(-1.85);
+  wp=[[-1,1.2],[1,1.2],[-1,-1.2],[1,-1.2]];ws=1.05;
+}else if(K=='limo'){ // stretch limousine
+  sh([[-2.9,.4],[-2.9,1.0],[2.3,1.05],[2.9,.85],[2.9,.4]],1.8,bodyM);
+  sh([[-2.6,1.0],[-2.4,1.5],[1.3,1.5],[1.8,1.0]],1.62,glassM);
+  box(1.5,.08,4.1,bodyM,0,1.52,-.55);
+  [-1,1].forEach(s=>{box(.04,.05,5.6,glow(R.ac),s*.91,.72,0);box(.04,.3,.05,chrome,s*.91,.7,.4)});
+  box(1.9,.1,.3,chrome,0,.45,2.95);box(1.9,.1,.3,chrome,0,.45,-2.95);box(.8,.2,.04,chrome,0,.85,2.92);
+  lights(null,.85,2.91,.3);tail(.9,-2.91);
+  wp=[[-1,1.8],[1,1.8],[-1,-1.8],[1,-1.8]];ws=.95;
 }
 const tireM=mat(0x17171b),rimM=mat(0x3a3d44),spkM=new THREE.MeshPhongMaterial({color:0xe6e9ef,shininess:70,flatShading:true}),wheels=[];
 wp.forEach(([sx,z,sc=1],i)=>{
