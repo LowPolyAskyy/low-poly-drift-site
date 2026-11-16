@@ -30,28 +30,17 @@ textarea{font:13px monospace;width:100%;height:96px;border-radius:12px;border:0;
 <script>
 const $=id=>document.getElementById(id);$('back').onclick=()=>go('index.html');
 const say=t=>$('msg').textContent=t||'';
-const AID=window.ARTIC_ID_URL||'';
 const esc=t=>String(t).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
-let mode='in';
-const ageOf=d=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||'');if(!m)return null;const n=new Date();let a=n.getFullYear()-m[1];if(n.getMonth()+1<+m[2]||(n.getMonth()+1===+m[2]&&n.getDate()<+m[3]))a--;return a};
 function draw(){const u=CLOUD.user();let h='';
- if(u){h='<div class="panel ch"><b>Signed in as '+esc(u)+'</b><small>Your Artic ID: '+esc(CLOUD.aid()||'-')+'<br>Your progress saves to the cloud automatically after every race and purchase, and loads on any device where you sign in.</small><div class="acts"><button class="btn sm" id="now">Sync now</button><button class="btn ghost sm" id="out">Sign out</button></div></div>'}
- else if(mode==='in'){h='<div class="panel ch"><b>Artic ID</b><small>One account for all Artic Studio games. Your cars, wraps, coins and rank follow you to every phone, browser and app.</small><input id="e" type="email" placeholder="Email" autocapitalize="off" autocomplete="email"><input id="p" type="password" placeholder="Password" autocomplete="current-password"><div class="acts"><button class="btn sm" id="in">Sign in</button><button class="btn ghost sm" id="sw">Create Artic ID</button></div><small><a href="'+AID+'/" target="_blank" rel="noopener" style="color:inherit">Forgot password?</a></small></div>'}
- else{const nm=(localStorage.dn_name||'').trim();h='<div class="panel ch"><b>Create your Artic ID</b><small>Free. Takes a minute.</small><input id="n" placeholder="Player name (3-16: letters, numbers, . _ -)" maxlength="16" autocapitalize="off" autocomplete="nickname" value="'+(/^[A-Za-z0-9_.-]{3,16}$/.test(nm)?esc(nm):'')+'"><input id="e" type="email" placeholder="Email" autocapitalize="off" autocomplete="email"><input id="p" type="password" placeholder="Password (8+ characters)" autocomplete="new-password"><small>Date of birth (you must be 14 or older)</small><input id="b" type="date" autocomplete="bday"><label style="display:flex;gap:8px;align-items:flex-start;font-size:13px"><input id="t" type="checkbox" style="width:20px;height:20px;flex:none"><span>I accept the <a href="'+AID+'/termini" target="_blank" rel="noopener" style="color:inherit">Terms of Service</a> and have read the <a href="'+AID+'/privacy" target="_blank" rel="noopener" style="color:inherit">Privacy Policy</a>.</span></label><div class="acts"><button class="btn sm" id="up">Create Artic ID</button><button class="btn ghost sm" id="sw">I already have one</button></div></div>'}
+ if(u){h='<div class="panel ch"><b>Signed in as '+esc(u)+'</b><small>Your Artic ID: '+esc(CLOUD.aid()||'-')+'<br>Your progress saves to the cloud automatically after every race and purchase, and loads on any device where you sign in.</small><div class="acts"><button class="btn sm" id="now">Sync now</button><button class="btn ghost sm" id="chg">Change password</button><button class="btn ghost sm" id="out">Sign out</button></div></div>'}
+ else{h='<div class="panel ch"><b>Artic ID</b><small>One account for all Artic Studio games. Your cars, wraps, coins and rank follow you to every phone, browser and app. You will go to the Artic ID site to sign in, then come right back here.</small><div class="acts"><button class="btn sm" id="in">Sign in</button><button class="btn ghost sm" id="up">Create Artic ID</button></div><div class="acts"><button class="btn ghost sm" id="fg">Forgot password?</button></div></div>'}
  $('w').innerHTML=h+'<div id="msg"></div>';
- if(u){$('now').onclick=async()=>{say('Syncing...');const r=await CLOUD.sync();if(r&&r.status===401){say('Session expired, sign in again');draw()}else say(r&&r.ok?'Synced!':(r&&r.err)||'Done')};$('out').onclick=async()=>{await CLOUD.logout();draw()};return}
- $('sw').onclick=()=>{mode=mode==='in'?'up':'in';draw()};
- const done=async r=>{if(!r.ok){say(r.err);return}say('Signed in!');await CLOUD.sync();draw();say('Signed in!')};
- if(mode==='in')$('in').onclick=async()=>{const e=$('e').value.trim(),p=$('p').value;if(!e||!p){say('Enter your email and password.');return}say('Please wait...');done(await CLOUD.login(e,p))};
- else $('up').onclick=async()=>{const n=$('n').value.trim(),e=$('e').value.trim(),p=$('p').value,b=$('b').value,a=ageOf(b);
-  if(!/^[A-Za-z0-9_.-]{3,16}$/.test(n))return say('Player name: 3-16 letters, numbers, . _ or -');
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e))return say('Enter a valid email.');
-  if(p.length<8)return say('Password: at least 8 characters.');
-  if(a===null)return say('Enter your date of birth.');
-  if(a<14)return say('You must be at least 14 to create an Artic ID. Ask a parent.');
-  if(!$('t').checked)return say('Please accept the Terms and the Privacy Policy.');
-  say('Please wait...');done(await CLOUD.register({nick:n,email:e,pass:p,birth:b}))}}
-draw();
+ if(u){$('now').onclick=async()=>{say('Syncing...');const r=await CLOUD.sync();if(r&&r.status===401){say('Session expired, sign in again');draw()}else say(r&&r.ok?'Synced!':(r&&r.err)||'Done')};
+  $('chg').onclick=()=>CLOUD.start('password');
+  $('out').onclick=async()=>{await CLOUD.logout();draw()};return}
+ $('in').onclick=()=>CLOUD.start('in');$('up').onclick=()=>CLOUD.start('up');$('fg').onclick=()=>CLOUD.start('forgot')}
+(async()=>{draw();const r=await CLOUD.finish();
+ if(r){if(r.ok){draw();say('Signed in!');await CLOUD.sync();draw();say('Signed in!')}else say(r.err)}})();
 </script>
 </body>
 </html>

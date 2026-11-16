@@ -1,4 +1,4 @@
-// Cloud save client. Account + progress live in Artic ID (articid project: /api/login, /api/register, /api/save). Progress = the localStorage keys below.
+// Cloud save client. Account + progress live in Artic ID (articid project: /api/me, /api/save, /api/logout; sign-in itself happens on the Artic ID site). Progress = the localStorage keys below.
 // cars.js saveProg() calls CLOUD.dirty() -> the save is pushed ~4 s later. CLOUD.sync() (called by the menu) pulls newer cloud data.
 const CLOUD=(()=>{
 const KEYS=['dn_coins','dn_owned2','dn_car2','dn_elo','dn_wraps','dn_wrapeq','dn_set','dn_name','dr'];
@@ -40,12 +40,17 @@ async function sync(){if(!user())return{};const r=await call('load');if(r.status
  await merge(r);
  return r}
 function clear(){['dn_tok','dn_user','dn_aid','dn_sync','dn_dirty'].forEach(D)}
-function msg(r){if(r.status===0)return'Cannot reach the server. Check your connection.';if(r.status===401)return'Wrong email or password';if(r.status===429)return'Too many attempts, try again in a few minutes';
- if(r.status===409)return/email/i.test(r.error||'')?'That email already has an Artic ID. Try signing in.':'That player name is taken. Pick another one.';return'Something went wrong. Check your details and try again.'}
-function fin(r){if((r.status===200||r.status===201)&&r.token&&r.user){W('dn_tok',r.token);W('dn_user',r.user.nick);W('dn_aid',r.user.aid);W('dn_sync','0');D('dn_dirty');return{ok:1,u:r.user.nick}}return{ok:0,status:r.status,err:msg(r)}}
-const login=async(email,pass)=>fin(await req('/login','POST',{email:String(email||'').trim(),password:String(pass||'')}));
-const register=async o=>fin(await req('/register','POST',{nick:o.nick,email:String(o.email||'').trim(),password:o.pass,birthdate:o.birth,terms:true}));
+// Login, registrazione, password dimenticata e cambio password si fanno sul sito Artic ID: da qui si va li' e si torna con #artic_token=...
+// mode: 'in' | 'up' | 'forgot' | 'password'. Va chiamata da save.html (e' li' che si torna).
+function start(mode){location.href=(window.ARTIC_ID_URL||'')+'/?return='+encodeURIComponent(location.origin+location.pathname)+'&mode='+encodeURIComponent(mode||'in')}
+// Al ritorno da Artic ID: legge il token dall'indirizzo, lo toglie dalla barra e salva l'accesso. Ritorna null se non si arriva da Artic ID.
+async function finish(){const m=/[#&]artic_token=([^&]+)/.exec(location.hash);if(!m)return null;
+ let tok='';try{tok=decodeURIComponent(m[1])}catch(e){}
+ try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
+ const r=await req('/me','GET',null,tok);
+ if(r.status===200&&r.user){const same=L('dn_aid')===r.user.aid;W('dn_tok',tok);W('dn_user',r.user.nick);W('dn_aid',r.user.aid);if(!same){W('dn_sync','0');D('dn_dirty')}return{ok:1,u:r.user.nick}}
+ return{ok:0,err:r.status===0?'Cannot reach the server. Check your connection.':'Sign-in failed. Please try again.'}}
 async function logout(){await call('logout');clear()}
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&L('dn_dirty')&&user())push()});
 const aid=()=>L('dn_aid')||'';
-return{user,aid,dirty,sync,push,login,register,logout}})();
+return{user,aid,dirty,sync,push,start,finish,logout}})();
