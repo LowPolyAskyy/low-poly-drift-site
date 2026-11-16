@@ -40,10 +40,10 @@ async function sync(){if(!user())return{};const r=await call('load');if(r.status
  await merge(r);
  return r}
 function clear(){['dn_tok','dn_user','dn_aid','dn_sync','dn_dirty'].forEach(D)}
-// Login, registrazione, password dimenticata e cambio password si fanno sul sito Artic ID: da qui si va li' e si torna con #artic_token=...
-// mode: 'in' | 'up' | 'forgot' | 'password'. Va chiamata da save.html (e' li' che si torna).
+// Sign in, sign up, forgot password and change password all happen on the Artic ID site: the game sends the player there and they come back with #artic_token=...
+// mode: 'in' | 'up' | 'forgot' | 'password'. Call it from save.html (that is the page they return to).
 function start(mode){location.href=(window.ARTIC_ID_URL||'')+'/?return='+encodeURIComponent(location.origin+location.pathname)+'&mode='+encodeURIComponent(mode||'in')}
-// Al ritorno da Artic ID: legge il token dall'indirizzo, lo toglie dalla barra e salva l'accesso. Ritorna null se non si arriva da Artic ID.
+// On return from Artic ID: reads the token from the address, removes it from the bar and saves the sign-in. Returns null if the player did not come from Artic ID.
 async function finish(){const m=/[#&]artic_token=([^&]+)/.exec(location.hash);if(!m)return null;
  let tok='';try{tok=decodeURIComponent(m[1])}catch(e){}
  try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
