@@ -79,7 +79,8 @@ select{font:inherit;font-size:14px;padding:10px 12px;border-radius:10px;border:0
   <p>Other players can hear you and you can hear them. Do you confirm that you are 18 years old or older?</p>
   <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn" id="ageyes">I am 18 or older</button><button class="btn ghost" id="ageno">Cancel</button></div>
  </div></div>
-<script src="config.js"></script>
+<script src="config.js?v=3"></script>
+<script>if(!window.NEAREST_KEY){window.CFG_OLD=1;window.SERVERS=window.SERVERS||{eu:{name:"Europe",url:window.SERVER_URL||""}};window.SERVER_KEY=window.SERVER_KEY||"eu";window.NEAREST_KEY=window.SERVER_KEY;window.setRegion=window.setRegion||function(){}}</script>
 <script src="device.js"></script>
 <script src="cars.js"></script>
 <script src="cloud.js"></script>
@@ -121,11 +122,13 @@ function stopTest(){testing=false;cancelAnimationFrame(traf);if(tstream)tstream.
 $('test').onclick=()=>testing?stopTest():startTest();
 addEventListener('pagehide',stopTest);
 paint();loadMics();
+try{
 (function(){const s=$('region'),ks=Object.keys(SERVERS).filter(k=>SERVERS[k].url);let pick='eu';try{pick=localStorage.dn_region||'eu'}catch(e){}
  s.innerHTML='<option value="auto">Auto (nearest: '+SERVERS[NEAREST_KEY].name+')</option>'+ks.map(k=>`<option value="${k}">${SERVERS[k].name}</option>`).join('');
  s.value=pick==='auto'||ks.includes(pick)?pick:'eu';
  $('regnow').textContent='Now on: '+SERVERS[SERVER_KEY].name+'. Players on different servers cannot race together.';
  s.onchange=()=>{setRegion(s.value);flash('Saved \u2014 applies when you open the lobby')}})();
+}catch(e){console.warn('server menu',e)}
 </script>
 <script>document.getElementById('savepg').onclick=()=>go('save.html')</script>
 </body>
