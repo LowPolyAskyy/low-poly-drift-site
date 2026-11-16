@@ -5,7 +5,8 @@
 // For tests / self-hosting set window.PEER_CFG = {host,port,path,secure} and window.PEERJS_SRC before this script runs.
 (function(){
 const SRC=window.PEERJS_SRC?[window.PEERJS_SRC]:['peerjs.min.js','https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js']  // own copy first, CDNs only as a fallback;
-const S=()=>(typeof SET!=='undefined'?SET:{vcOn:true,vcVol:1,vcPtt:false,mic:''});
+const S=()=>(typeof SET!=='undefined'?SET:{vcOn:false,vcAge:false,vcVol:1,vcPtt:false,mic:''});
+const allowed=()=>!!(S().vcOn&&S().vcAge);   // off by default: Settings > Voice chat > On + 18+ confirmation
 let me='',room='',others=[],names={},peer=null,stream=null,joined=false,joining=false,muted=false,pttDown=false,ui=null;
 const calls={},audios={},meters={};let ac=null,tick=null,retry=null;
 // The PeerJS cloud keeps an id "busy" for a while after a refresh / after pressing X, so rejoining could fail with "id unavailable".
@@ -112,7 +113,7 @@ function stop(keepUI){stopPeer();stopStream();joined=joining=false;muted=false;l
 addEventListener('pagehide',()=>{try{if(peer)peer.destroy()}catch(_){}});
 window.VC={
   update(myId,roomCode,otherIds,nameMap){
-    if(!S().vcOn){this.leave();return}
+    if(!allowed()){this.leave();return}
     build();ui.style.display='flex';
     if(joined&&(myId!==me||roomCode!==room))stop(true);
     me=String(myId);room=String(roomCode||'room');others=(otherIds||[]).map(String);names=nameMap||{};

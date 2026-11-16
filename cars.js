@@ -189,8 +189,11 @@ function wrapCSS(w){const h=c=>'#'+c.toString(16).padStart(6,'0'),a=h(w.c[0]),b=
  case 24:return 'linear-gradient(120deg,#9fe8ff,#d9b8ff,#ffc2e8,#fff2b0,#b6ffd8,#9fe8ff)';
  default:return a}}
 // ---------- settings (settings.html) ----------
-const SET={units:'kmh',shake:1,quality:'high',vcOn:true,vcVol:1,vcPtt:false,mic:'',ctrl:'joy',camMode:'follow',camDist:'normal',fov:58};
+const SET={units:'kmh',shake:1,quality:'high',vcOn:false,vcAge:false,vcVol:1,vcPtt:false,mic:'',ctrl:'joy',camMode:'follow',camDist:'normal',fov:58,
+ ctrlSize:1,ctrlOp:.9,ctrlSwap:false,steerSens:1,hudSize:1,mapSize:'md',vib:true};
 try{Object.assign(SET,JSON.parse(localStorage.dn_set||'{}'))}catch(e){}
+// voice chat is OFF until the player turns it on in Settings and confirms they are 18+ (also resets old saves that had it on)
+if(!SET.vcAge)SET.vcOn=false;
 const saveSet=()=>{try{localStorage.dn_set=JSON.stringify(SET)}catch(e){}};
 // Graphics "Low": no live 3D menu background and no blur effects (helps phones whose screen flickers black/white)
 if(typeof document!=='undefined'&&SET.quality==='low'){document.documentElement.classList.add('lowfx');

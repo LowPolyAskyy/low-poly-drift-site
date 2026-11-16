@@ -127,6 +127,21 @@ body.mob #sys{left:calc(10px + env(safe-area-inset-left,0px));font-size:11px;pad
 #dbg{position:fixed;right:12px;top:calc(12px + env(safe-area-inset-top,0px));z-index:30;display:none;max-width:min(430px,92vw);max-height:calc(100vh - 230px);overflow:hidden;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,.74);color:#9dffb0;font:11px/1.35 Consolas,Menlo,monospace;white-space:pre;pointer-events:none}
 body.mob #dbg{right:auto;left:calc(10px + env(safe-area-inset-left,0px));top:calc(170px + env(safe-area-inset-top,0px));font-size:10px;max-height:calc(100vh - 190px)}
 body.bg #sys,body.bg #dbg{display:none!important}
+/* ---- touch settings (settings.html): size, opacity, mirrored sides, HUD size, minimap size ---- */
+:root{--cs:1;--cop:.9;--hs:1}
+body.mob #joy{width:calc(130px*var(--cs));height:calc(130px*var(--cs));opacity:var(--cop)}
+body.mob #knob{width:calc(56px*var(--cs));height:calc(56px*var(--cs))}
+body.mob #arrpad button,body.mob #gaspad button{width:calc(88px*var(--cs));height:calc(88px*var(--cs));opacity:var(--cop)}
+body.mob #brkpad #brk{width:calc(104px*var(--cs));height:calc(104px*var(--cs));opacity:var(--cop)}
+body.mob #gaspad{right:calc(36px + 104px*var(--cs) + env(safe-area-inset-right,0px))}
+body.swap #joy,body.swap #arrpad{left:auto;right:calc(18px + env(safe-area-inset-right,0px))}
+body.swap #brkpad{right:auto;left:calc(18px + env(safe-area-inset-left,0px))}
+body.mob.swap #gaspad{right:auto;left:calc(36px + 104px*var(--cs) + env(safe-area-inset-left,0px))}
+body.mob #hud{transform:scale(var(--hs));transform-origin:top left}
+body.mob #pl{top:calc(138px*var(--hs) + env(safe-area-inset-top,0px))}
+body.mob.mm-off #map{display:none!important}
+body.mob.mm-sm #map{width:76px;height:76px}
+body.mob.mm-lg #map{width:150px;height:150px}
 </style>
 </head>
 <body>
@@ -170,6 +185,8 @@ const $=id=>document.getElementById(id),TAU=Math.PI*2;
 const MOB=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||matchMedia('(pointer:coarse)').matches||/[?&]m=1/.test(location.search);
 if(MOB)document.body.classList.add('mob');
 if(SET.ctrl==='arrows')document.body.classList.add('arr');
+(function(){const r=document.documentElement.style,b=document.body.classList;r.setProperty('--cs',SET.ctrlSize||1);r.setProperty('--cop',SET.ctrlOp||.9);r.setProperty('--hs',SET.hudSize||1);
+ if(SET.ctrlSwap)b.add('swap');b.add('mm-'+(SET.mapSize||'md'))})();
 const angDiff=(a,b)=>{let d=a-b;while(d>Math.PI)d-=TAU;while(d<-Math.PI)d+=TAU;return d};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 let seed=11;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
@@ -435,16 +452,16 @@ const keys={},touch={};
 addEventListener('keydown',e=>{if(e.code==='F9'){e.preventDefault();dbgToggle();return}if(e.code==='F8'&&DBG.on){e.preventDefault();dbgWire();return}if(e.target.tagName==='INPUT')return;if(net.kicked){if(e.code==='Space'||e.code.startsWith('Arrow'))e.preventDefault();return}keys[e.code]=1;if(e.code==='KeyR'&&mode==='race')resetCar();if(e.code==='KeyR'&&mode==='arena')resetCarArena();if(e.code==='Escape'&&!ONLINE)showMenu();if(net.voteEnd&&/^Digit[123]$/.test(e.code))pickMap(+e.code[5]-1);if(e.code==='Space'||e.code.startsWith('Arrow'))e.preventDefault()});
 addEventListener('keyup',e=>keys[e.code]=0);
 // virtual joystick: x = steering (analog), up = gas, down = reverse/brake
-(function(){const joy=$('joy'),knob=$('knob'),R=45;let pid=null;
+(function(){const joy=$('joy'),knob=$('knob'),R=45*(SET.ctrlSize||1);let pid=null;
  function move(e){const r=joy.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),d=Math.hypot(dx,dy)||1,k=Math.min(1,R/d),px=dx*k,py=dy*k;
-  knob.style.transform=`translate(${px}px,${py}px)`;const sx=px/R,sy=py/R;
+  knob.style.transform=`translate(${px}px,${py}px)`;const sx=clamp(px/R*(SET.steerSens||1),-1,1),sy=py/R;
   touch.sx=Math.abs(sx)<.12?0:sx;touch.up=sy<-.3;touch.down=sy>.3}
  function end(e){if(e.pointerId!==pid)return;pid=null;knob.style.transform='translate(0,0)';touch.sx=0;touch.up=touch.down=false}
  joy.addEventListener('pointerdown',e=>{if(pid!==null)return;pid=e.pointerId;try{joy.setPointerCapture(pid)}catch(_){}move(e);e.preventDefault()});
  joy.addEventListener('pointermove',e=>{if(e.pointerId===pid)move(e)});
  ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>joy.addEventListener(ev,end))})();
 document.querySelectorAll('.pad button').forEach(b=>{
-  const k=b.dataset.k;b.addEventListener('pointerdown',e=>{touch[k]=1;e.preventDefault()});
+  const k=b.dataset.k;b.addEventListener('pointerdown',e=>{touch[k]=1;if(SET.vib!==false&&navigator.vibrate)try{navigator.vibrate(12)}catch(_){}e.preventDefault()});
   ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>touch[k]=0));
 });
 
