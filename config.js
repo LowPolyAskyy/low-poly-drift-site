@@ -2,7 +2,7 @@
 // To add the America server: put its address in "us" below, nothing else to change.
 window.SERVERS={
  eu:{name:'Europe',url:'https://low-poly-drift-server-eu.onrender.com'},
- us:{name:'America',url:'https://low-poly-drift-server-usa.onrender.com'},
+ us:{name:'America',url:''},
  asia:{name:'Asia',url:'https://low-poly-drift-server-asia.onrender.com'}
 };
 // Region choice: ?srv=xx in the address (used to join a friend's room) > saved choice (Settings / lobby) > Europe.
@@ -25,4 +25,4 @@ window.SERVERS={
 // true when the game runs inside one of our apps (Android/iPhone "median" app, the Windows Electron app, or an installed PWA).
 // The Download page and its links are only for the website, so they are hidden when this is true.
 window.IN_APP=/median|gonative|LowPolyDriftApp|Electron/i.test(navigator.userAgent)||!!window.median||!!window.gonative||navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
-window.CLOUD_URL="https://low-poly-drift.vercel.app"; // cloud save API (api/cloud.js on Vercel)
+window.ARTIC_ID_URL="https://articid.vercel.app"; // Artic ID (accounts + cloud save). The game origin must be listed in ALLOWED_ORIGINS there.

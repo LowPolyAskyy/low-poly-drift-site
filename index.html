@@ -51,7 +51,7 @@ document.getElementById('rankbar').innerHTML=rankBarHTML(prog.elo);
 // Christmas event: Advent button visible 1 Dec - 3 Jan (Italy time), or with ?betatest=christmas
 if(XMAS_ON()){const a=document.getElementById('advent');a.style.display='';a.onclick=()=>go('advent.html')}
 if(BETA){const t=document.createElement('div');t.textContent='BETA TEST: '+BETA;t.style.cssText='position:fixed;top:8px;left:8px;background:#c8102e;color:#fff;font:700 12px sans-serif;padding:4px 10px;border-radius:8px;z-index:9';t.onclick=()=>{location.href='index.html?betatest=off'};document.body.appendChild(t)}
-const ac=document.getElementById('acc');ac.textContent=CLOUD.user()?'Cloud save: '+CLOUD.user():'Sign in / Cloud save';ac.onclick=()=>go('save.html');CLOUD.sync();
+const ac=document.getElementById('acc');ac.textContent=CLOUD.user()?'Artic ID: '+CLOUD.user():'Sign in with Artic ID';ac.onclick=()=>go('save.html');CLOUD.sync();
 document.getElementById('play').onclick=()=>go('lobby.html');
 document.getElementById('shop').onclick=()=>go('shop.html');
 document.getElementById('settings').onclick=()=>go('settings.html');
