@@ -26,11 +26,20 @@
 #err{color:#ffb0a0;min-height:20px;text-align:center}
 #lan{font-size:13px;color:var(--muted);text-align:center}
 .name{display:flex;gap:8px;align-items:center}.name input{width:170px}
+select{font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:0;background:rgba(0,0,0,.35);color:var(--ink)}
+.srv{display:flex;gap:8px;align-items:center;justify-content:center}
 </style>
 </head>
 <body>
 <iframe id="bgmap" data-src="game.html?bg=1" tabindex="-1" aria-hidden="true"></iframe><div id="bgdim"></div>
 <div class="top"><button class="btn ghost" id="back">&larr; Menu</button><h2>Lobby</h2><div class="name"><span>Name</span><input id="name" maxlength="12" placeholder="Player"></div></div>
+<div id="rg" style="display:none;position:fixed;inset:0;z-index:50;align-items:center;justify-content:center;padding:18px;background:rgba(10,8,14,.7)">
+ <div class="panel" style="max-width:440px;text-align:center;display:flex;flex-direction:column;gap:14px">
+  <h3 style="margin:0">Server change</h3>
+  <p id="rgtxt"></p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn" id="rgyes">Continue</button><button class="btn ghost" id="rgno">Stay on Europe</button></div>
+ </div></div>
+<div class="srv"><span>Server</span><select id="srv"></select></div>
 <div id="err"></div>
 <div class="cols">
   <div class="panel">
@@ -64,16 +73,32 @@ $('cpub').onclick=()=>play('mode=create-public');
 $('jpriv').onclick=async()=>{
  const code=$('code').value.toUpperCase().replace(/[^A-Z0-9]/g,'');$('err').textContent='';
  if(!code){$('err').textContent='Enter a room code';return}
- try{const r=await (await fetch(API('/room?code='+code))).json();
-  if(!r.exists){$('err').textContent='Private room not found';return}
-  if(r.players>=r.max){$('err').textContent='That room is full';return}
- }catch(e){$('err').textContent='Cannot reach the server';return}
- play('mode=join-private&room='+code)};
+ // a room lives on one server: ask mine first, then the others (a sleeping server has no rooms, so a short timeout is fine)
+ const ask=async k=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),k===SERVER_KEY?15000:6000);
+  try{const r=await (await fetch(SERVERS[k].url.replace(/\/$/,'')+'/room?code='+code,{signal:c.signal})).json();return r&&r.exists?{k,r}:null}
+  catch(e){return k===SERVER_KEY?{err:1}:null}finally{clearTimeout(t)}};
+ let hit=await ask(SERVER_KEY);
+ if(!hit||hit.err){
+  const f=(await Promise.all(Object.keys(SERVERS).filter(k=>SERVERS[k].url&&k!==SERVER_KEY).map(ask))).find(x=>x&&x.r);
+  if(f)hit=f;else if(hit&&hit.err){$('err').textContent='Cannot reach the server';return}}
+ if(!hit||!hit.r){$('err').textContent='Private room not found';return}
+ if(hit.r.players>=hit.r.max){$('err').textContent='That room is full';return}
+ play('mode=join-private&room='+code+(hit.k!==SERVER_KEY?'&srv='+hit.k:''))};
 $('rooms').onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.k)play('mode=join-public&key='+encodeURIComponent(b.dataset.k))};
 async function refresh(){
  try{const l=await (await fetch(API('/rooms'))).json();
   $('rooms').innerHTML=l.length?l.map(r=>`<div class="rm"><div class="i"><b>${esc(r.name)}</b><small>Host: ${esc(r.host)} &middot; ${r.players}/${r.max} players</small></div><span class="tag ${r.racing?'r':'w'}">${r.racing?'Racing':'Waiting'}</span><button class="btn" data-k="${esc(r.key)}" ${r.players>=r.max?'disabled':''}>Join</button></div>`).join(''):'<p>No public rooms right now. Create one!</p>'}
  catch(e){$('rooms').innerHTML='<p>Cannot reach the server</p>'}}
+(function(){const s=$('srv'),ks=Object.keys(SERVERS).filter(k=>SERVERS[k].url);let pick='eu';try{pick=localStorage.dn_region||'eu'}catch(e){}
+ s.innerHTML='<option value="auto">Auto (nearest: '+SERVERS[NEAREST_KEY].name+')</option>'+ks.map(k=>`<option value="${k}">${SERVERS[k].name}</option>`).join('');
+ s.value=pick==='auto'||ks.includes(pick)?pick:'eu';s.onchange=()=>{setRegion(s.value);location.reload()}})();
+// first visit outside Europe: you start on the Europe servers, ask before moving to the nearest one
+(function(){let st=null;try{st=localStorage.dn_region}catch(e){}
+ if(st||NEAREST_KEY==='eu'||/[?&]srv=/.test(location.search))return;
+ $('rgtxt').textContent='You are on the Europe servers. You will be moved to the server nearest to you: '+SERVERS[NEAREST_KEY].name+'. Continue?';
+ $('rg').style.display='flex';
+ $('rgyes').onclick=()=>{setRegion(NEAREST_KEY);location.reload()};
+ $('rgno').onclick=()=>{setRegion('eu');$('rg').style.display='none'}})();
 refresh();setInterval(refresh,2000);
 if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname))fetch('/lan').then(r=>r.json()).then(l=>{if(l.length)$('lan').innerHTML='Friends on your Wi-Fi: <b>'+esc(l[0].url)+'</b>'}).catch(()=>{});
 </script>

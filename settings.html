@@ -36,6 +36,10 @@ select{font:inherit;font-size:14px;padding:10px 12px;border-radius:10px;border:0
 <div class="top"><button class="btn ghost" id="back">&larr; Menu</button><h2>Settings</h2><span></span></div>
 <div class="wrap" id="wrap">
  <div class="panel">
+  <h3>Server</h3>
+  <div class="set"><div class="t"><b>Game server</b><small id="regnow">Players on different servers cannot race together. &ldquo;Auto&rdquo; picks the server nearest to you.</small></div><select id="region"></select></div>
+ </div>
+ <div class="panel">
   <h3>Gameplay</h3>
   <div class="set"><div class="t"><b>Speed units</b><small>Speedometer and top speed</small></div><div class="seg" data-k="units"><button data-v="kmh">km/h</button><button data-v="mph">mph</button></div></div>
   <div class="set"><div class="t"><b>Camera shake</b><small>Shaking when you crash, land or boost</small></div><div class="seg" data-k="shake" data-num="1"><button data-v="0">Off</button><button data-v="0.4">Low</button><button data-v="1">Normal</button></div></div>
@@ -117,6 +121,11 @@ function stopTest(){testing=false;cancelAnimationFrame(traf);if(tstream)tstream.
 $('test').onclick=()=>testing?stopTest():startTest();
 addEventListener('pagehide',stopTest);
 paint();loadMics();
+(function(){const s=$('region'),ks=Object.keys(SERVERS).filter(k=>SERVERS[k].url);let pick='eu';try{pick=localStorage.dn_region||'eu'}catch(e){}
+ s.innerHTML='<option value="auto">Auto (nearest: '+SERVERS[NEAREST_KEY].name+')</option>'+ks.map(k=>`<option value="${k}">${SERVERS[k].name}</option>`).join('');
+ s.value=pick==='auto'||ks.includes(pick)?pick:'eu';
+ $('regnow').textContent='Now on: '+SERVERS[SERVER_KEY].name+'. Players on different servers cannot race together.';
+ s.onchange=()=>{setRegion(s.value);flash('Saved \u2014 applies when you open the lobby')}})();
 </script>
 <script>document.getElementById('savepg').onclick=()=>go('save.html')</script>
 </body>
