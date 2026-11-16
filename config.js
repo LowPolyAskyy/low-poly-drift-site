@@ -2,7 +2,7 @@
 // To add the America server: put its address in "us" below, nothing else to change.
 window.SERVERS={
  eu:{name:'Europe',url:'https://low-poly-drift-server-eu.onrender.com'},
- us:{name:'America',url:''},
+ us:{name:'America',url:'https://low-poly-drift-server-usa.onrender.com'},
  asia:{name:'Asia',url:'https://low-poly-drift-server-asia.onrender.com'}
 };
 // Region choice: ?srv=xx in the address (used to join a friend's room) > saved choice (Settings / lobby) > Europe.
