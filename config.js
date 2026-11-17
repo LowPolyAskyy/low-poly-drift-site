@@ -1,5 +1,4 @@
 // ---- game servers, one per region (Render free instances) ----
-// To add the America server: put its address in "us" below, nothing else to change.
 window.SERVERS = {
     europe: { name: 'Frankfurt (Europe)', url: 'https://low-poly-drift-server-eu.onrender.com' },
     america: { name: 'Ashburn (America)', url: 'https://low-poly-drift-server-usa.onrender.com' },
