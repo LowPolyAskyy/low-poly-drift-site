@@ -5,7 +5,7 @@ window.SERVERS={
  america:{name:'Ashbrun (america)',url:'https://low-poly-drift-server-usa.onrender.com'},
  asia:{name:'Singapore (asia)',url:'https://low-poly-drift-server-asia.onrender.com'},
  asia2:{name:'Kolkata (india)',url:'https://hexagon-bony-hippopotamus.abasthan.app'}
-};
+}
 // Region choice: ?srv=xx in the address (used to join a friend's room) > saved choice (Settings / lobby) > Europe.
 // "auto" = the server nearest to the player, guessed from the time zone. The lobby asks once before moving someone away from Europe.
 // No ping is sent to the other servers here: on the free plan every request wakes a sleeping server and uses up the monthly hours.
