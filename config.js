@@ -1,11 +1,11 @@
 // ---- game servers, one per region (Render free instances) ----
 // To add the America server: put its address in "us" below, nothing else to change.
-window.SERVERS={
- europe:{name:'Frankfurt (europe)',url:'https://low-poly-drift-server-eu.onrender.com'},
- america:{name:'Ashbrun (america)',url:'https://low-poly-drift-server-usa.onrender.com'},
- asia:{name:'Singapore (asia)',url:'https://low-poly-drift-server-asia.onrender.com'},
- asia2:{name:'Kolkata (india)',url:'https://hexagon-bony-hippopotamus.abasthan.app'}
-}
+window.SERVERS = {
+    europe: { name: 'Frankfurt (Europe)', url: 'https://low-poly-drift-server-eu.onrender.com' },
+    america: { name: 'Ashburn (America)', url: 'https://low-poly-drift-server-usa.onrender.com' },
+    asia: { name: 'Singapore (Asia)', url: 'https://low-poly-drift-server-asia.onrender.com' },
+    india: { name: 'Kolkata (India)', url: 'https://hexagon-bony-hippopotamus.abasthan.app' }
+};
 // Region choice: ?srv=xx in the address (used to join a friend's room) > saved choice (Settings / lobby) > Europe.
 // "auto" = the server nearest to the player, guessed from the time zone. The lobby asks once before moving someone away from Europe.
 // No ping is sent to the other servers here: on the free plan every request wakes a sleeping server and uses up the monthly hours.
