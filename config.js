@@ -3,7 +3,8 @@
 window.SERVERS={
  eu:{name:'Europe',url:'https://low-poly-drift-server-eu.onrender.com'},
  us:{name:'America',url:'https://low-poly-drift-server-usa.onrender.com'},
- asia:{name:'Asia',url:'https://low-poly-drift-server-asia.onrender.com'}
+ asia:{name:'Asia',url:'https://low-poly-drift-server-asia.onrender.com'},
+ test:{name:'test',url:'https://hexagon-bony-hippopotamus.abasthan.app'}
 };
 // Region choice: ?srv=xx in the address (used to join a friend's room) > saved choice (Settings / lobby) > Europe.
 // "auto" = the server nearest to the player, guessed from the time zone. The lobby asks once before moving someone away from Europe.
