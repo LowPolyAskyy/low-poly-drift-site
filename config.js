@@ -22,7 +22,7 @@ window.SERVERS = {
         url: 'https://low-poly-drift-server-vercel.vercel.app'
     },
     africa: {
-        name: 'Africa',
+        name: 'Cape Town (Africa)',
         url: 'https://low-poly-drift-server-vercel-67bf6d1b9-ramenex14-5192.vercel.app'
     }
 };
